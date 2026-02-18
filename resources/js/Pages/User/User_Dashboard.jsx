@@ -1,0 +1,288 @@
+import { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+
+export default function Dashboard() {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [activeTab, setActiveTab] = useState('overview');
+
+    // Sample user data
+    const user = {
+        name: 'John Doe',
+        email: 'john@example.com',
+        avatar: '👤',
+        plan: 'Pro',
+        joinDate: 'January 2026'
+    };
+
+    // Sample stats
+    const stats = [
+        { id: 1, name: 'Total Projects', value: '12', icon: '📊', change: '+2', changeType: 'increase' },
+        { id: 2, name: 'Active Tasks', value: '24', icon: '✅', change: '+5', changeType: 'increase' },
+        { id: 3, name: 'Team Members', value: '8', icon: '👥', change: '+1', changeType: 'increase' },
+        { id: 4, name: 'Completion Rate', value: '87%', icon: '📈', change: '+12%', changeType: 'increase' },
+    ];
+
+    // Sample recent activity
+    const recentActivity = [
+        { id: 1, action: 'Completed task', project: 'Website Redesign', time: '2 hours ago', icon: '✅' },
+        { id: 2, action: 'Added new member', project: 'Mobile App', time: '5 hours ago', icon: '👤' },
+        { id: 3, action: 'Updated deadline', project: 'Dashboard UI', time: '1 day ago', icon: '📅' },
+        { id: 4, action: 'Created new project', project: 'API Integration', time: '2 days ago', icon: '🚀' },
+    ];
+
+    // Sample projects
+    const projects = [
+        { id: 1, name: 'Website Redesign', progress: 75, members: 4, dueDate: 'Mar 15', status: 'active', color: 'blue' },
+        { id: 2, name: 'Mobile App Development', progress: 45, members: 6, dueDate: 'Apr 20', status: 'active', color: 'indigo' },
+        { id: 3, name: 'API Integration', progress: 90, members: 3, dueDate: 'Mar 10', status: 'active', color: 'purple' },
+        { id: 4, name: 'User Research', progress: 30, members: 2, dueDate: 'Mar 25', status: 'pending', color: 'orange' },
+    ];
+
+    const handleLogout = () => {
+        router.post(route('logout'));
+    };
+
+    return (
+        <>
+            <Head title="Dashboard" />
+            
+            <div className="min-h-screen flex bg-gradient-to-br from-blue-50 to-indigo-100">
+                {/* Sidebar */}
+                <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white/80 backdrop-blur-sm shadow-lg transition-all duration-300 flex flex-col`}>
+                    {/* Logo */}
+                    <div className="h-20 flex items-center justify-center border-b border-gray-200">
+                        <span className={`text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent ${!isSidebarOpen && 'text-xl'}`}>
+                            {isSidebarOpen ? 'YourApp' : 'YA'}
+                        </span>
+                    </div>
+
+                    {/* Sidebar Toggle */}
+                    <button
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        className="absolute left-64 top-20 -translate-x-1/2 bg-white rounded-full p-1.5 shadow-md hover:shadow-lg transition-all"
+                        style={{ left: isSidebarOpen ? '16rem' : '5rem' }}
+                    >
+                        <span className="text-gray-600">
+                            {isSidebarOpen ? '◀' : '▶'}
+                        </span>
+                    </button>
+
+                    {/* Navigation - Removed user profile section */}
+                    <nav className="flex-1 px-3 py-6">
+                        <div className="space-y-2">
+                            <NavItem icon="📊" text="Dashboard" active={activeTab === 'overview'} isOpen={isSidebarOpen} onClick={() => setActiveTab('overview')} />
+                            <NavItem icon="📁" text="Projects" active={activeTab === 'projects'} isOpen={isSidebarOpen} onClick={() => setActiveTab('projects')} />
+                            <NavItem icon="✅" text="Tasks" active={activeTab === 'tasks'} isOpen={isSidebarOpen} onClick={() => setActiveTab('tasks')} />
+                            <NavItem icon="👥" text="Team" active={activeTab === 'team'} isOpen={isSidebarOpen} onClick={() => setActiveTab('team')} />
+                            <NavItem icon="📅" text="Calendar" active={activeTab === 'calendar'} isOpen={isSidebarOpen} onClick={() => setActiveTab('calendar')} />
+                            <NavItem icon="⚙️" text="Settings" active={activeTab === 'settings'} isOpen={isSidebarOpen} onClick={() => setActiveTab('settings')} />
+                        </div>
+                    </nav>
+
+                    {/* Empty div to maintain spacing - no profile */}
+                    <div className="h-4"></div>
+                </div>
+
+                {/* Main Content */}
+                <div className="flex-1 overflow-auto">
+                    {/* Top Navigation */}
+                    <nav className="bg-white/80 backdrop-blur-sm shadow-sm">
+                        <div className="px-6 py-4">
+                            <div className="flex justify-between items-center">
+                                {/* Search Bar */}
+                                <div className="flex-1 max-w-lg">
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-3 text-gray-400">🔍</span>
+                                        <input
+                                            type="text"
+                                            placeholder="Search projects, tasks, or team members..."
+                                            className="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Right Navigation */}
+                                <div className="flex items-center space-x-4">
+                                    {/* Notifications */}
+                                    <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all">
+                                        <span className="text-xl">🔔</span>
+                                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                                    </button>
+
+                                    {/* Messages */}
+                                    <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all">
+                                        <span className="text-xl">💬</span>
+                                        <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
+                                    </button>
+
+                                    {/* Profile Dropdown */}
+                                    <div className="relative">
+                                        <button className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-all">
+                                            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white">
+                                                {user.avatar}
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-700">{user.name}</span>
+                                        </button>
+                                    </div>
+
+                                    {/* Logout Button */}
+                                    <button
+                                        onClick={handleLogout}
+                                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+
+                    {/* Dashboard Content */}
+                    <div className="p-6">
+                        {/* Welcome Banner */}
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white mb-6">
+                            <h1 className="text-2xl font-bold mb-2">Welcome back, {user.name}! 👋</h1>
+                            <p className="text-blue-100">Here's what's happening with your projects today.</p>
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                            {stats.map((stat) => (
+                                <div key={stat.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-3xl">{stat.icon}</span>
+                                        <span className={`text-sm font-medium ${stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'}`}>
+                                            {stat.change}
+                                        </span>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
+                                    <p className="text-gray-600">{stat.name}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Projects and Activity Grid */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Projects Section */}
+                            <div className="lg:col-span-2">
+                                <div className="bg-white rounded-xl shadow-lg p-6">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-bold text-gray-900">Active Projects</h2>
+                                        <Link href="#" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                            View All →
+                                        </Link>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {projects.map((project) => (
+                                            <div key={project.id} className="border-2 border-gray-100 rounded-xl p-4 hover:border-blue-200 transition-all">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className={`w-2 h-2 bg-${project.color}-500 rounded-full`}></div>
+                                                        <h3 className="font-semibold text-gray-900">{project.name}</h3>
+                                                        <span className={`text-xs px-2 py-1 rounded-full ${
+                                                            project.status === 'active' 
+                                                                ? 'bg-green-100 text-green-700' 
+                                                                : 'bg-orange-100 text-orange-700'
+                                                        }`}>
+                                                            {project.status}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-sm text-gray-500">Due {project.dueDate}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className="text-sm text-gray-600">Progress:</span>
+                                                        <div className="w-32 h-2 bg-gray-200 rounded-full">
+                                                            <div 
+                                                                className={`h-full bg-${project.color}-500 rounded-full`}
+                                                                style={{ width: `${project.progress}%` }}
+                                                            ></div>
+                                                        </div>
+                                                        <span className="text-sm font-medium text-gray-700">{project.progress}%</span>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className="text-sm text-gray-500">👥 {project.members}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Recent Activity */}
+                            <div className="lg:col-span-1">
+                                <div className="bg-white rounded-xl shadow-lg p-6">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
+                                    <div className="space-y-4">
+                                        {recentActivity.map((activity) => (
+                                            <div key={activity.id} className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0">
+                                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                                                    {activity.icon}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-900">
+                                                        <span className="font-medium">{activity.action}</span>{' '}
+                                                        in <span className="font-medium">{activity.project}</span>
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="mt-6">
+                            <div className="bg-white rounded-xl shadow-lg p-6">
+                                <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <QuickActionButton icon="📁" text="New Project" color="blue" />
+                                    <QuickActionButton icon="✅" text="Add Task" color="green" />
+                                    <QuickActionButton icon="👥" text="Invite Team" color="purple" />
+                                    <QuickActionButton icon="📊" text="Generate Report" color="orange" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}
+
+// Sidebar Navigation Item Component
+function NavItem({ icon, text, active, isOpen, onClick }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all ${
+                active 
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-200' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+        >
+            <span className="text-xl">{icon}</span>
+            {isOpen && <span className="font-medium">{text}</span>}
+        </button>
+    );
+}
+
+// Quick Action Button Component
+function QuickActionButton({ icon, text, color }) {
+    const colorClasses = {
+        blue: 'bg-blue-50 text-blue-600 hover:bg-blue-100',
+        green: 'bg-green-50 text-green-600 hover:bg-green-100',
+        purple: 'bg-purple-50 text-purple-600 hover:bg-purple-100',
+        orange: 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+    };
+
+    return (
+        <button className={`p-4 rounded-xl transition-all ${colorClasses[color]}`}>
+            <span className="text-2xl block mb-2">{icon}</span>
+            <span className="text-sm font-medium">{text}</span>
+        </button>
+    );
+}
