@@ -51,6 +51,7 @@ class User extends Authenticatable
         'surName',
         'userEmail',
         'userPassword',
+        'userOffice',
         'userAccess', // <-- ADD THIS LINE
     ];
 
