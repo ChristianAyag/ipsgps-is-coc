@@ -186,7 +186,7 @@ class RegisteredUserController extends Controller
     /**
      * Update user information (optional)
      */
-    public function updateInformation(Request $request, $userID): JsonResponse
+    /*public function updateInformation(Request $request, $userID): JsonResponse
     {
         $user = User::where('userID', $userID)->first();
         
@@ -232,5 +232,5 @@ class RegisteredUserController extends Controller
             'message' => 'User information updated successfully',
             'data' => $userInformation
         ]);
-    }
+    }*/
 }

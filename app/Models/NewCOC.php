@@ -16,7 +16,7 @@ class NewCOC extends Model
      *
      * @var string
      */
-    protected $table = 'tblNewCOC';
+    protected $table = 'application_newCOC';
 
     /**
      * The primary key associated with the table.

@@ -38,7 +38,7 @@ return new class extends Migration
             // Foreign key constraint
             $table->foreign('userID')
                   ->references('userID')
-                  ->on('tblUsers')
+                  ->on('login_users')
                   ->onDelete('cascade')
                   ->onUpdate('cascade');
         });
@@ -49,6 +49,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tblNewCOC');
+        Schema::dropIfExists('application_newCOC');
     }
 };

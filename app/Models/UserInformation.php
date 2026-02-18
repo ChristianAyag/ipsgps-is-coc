@@ -15,7 +15,7 @@ class UserInformation extends Model
      *
      * @var string
      */
-    protected $table = 'tblUserInformation';
+    protected $table = 'regs_userInformation';
 
     /**
      * The primary key associated with the table.
