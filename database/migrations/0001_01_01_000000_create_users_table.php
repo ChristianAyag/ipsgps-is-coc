@@ -11,18 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Create the login_users table WITHOUT the foreign key constraint first
         Schema::create('login_users', function (Blueprint $table) {
             $table->string('userID')->primary();
             $table->string('firstName');
             $table->string('middleName')->nullable();
             $table->string('surName');
             $table->string('userEmail')->unique();
-            $table->string('userOffice');
+            $table->string('userOffice')->nullable();
             $table->string('userPassword');
             $table->string('email_verified_at')->nullable();
-            $table->string('userAccess')->default('Applicant');
+            $table->string('userAccess');
             $table->rememberToken();
+            $table->timestamp('last_login')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
+            
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
