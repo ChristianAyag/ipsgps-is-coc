@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tblUserInformation', function (Blueprint $table) {
+        Schema::create('regs_userInformation', function (Blueprint $table) {
             $table->string('userInfoID', 50)->primary();
             $table->string('userID', 50);
             $table->string('birthDate', 20); // Using string for flexibility with date formats

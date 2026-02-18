@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tblUsers', function (Blueprint $table) {
+        Schema::create('login_users', function (Blueprint $table) {
             $table->string('userID')->primary();
             $table->string('firstName');
             $table->string('middleName')->nullable();
@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('userEmail')->unique();
             $table->string('userPassword');
             $table->string('email_verified_at')->nullable();
-            $table->string('userAccess')->default('Applicant'); // <-- ADD THIS LINE
+            $table->string('userAccess')->default('Applicant');
             $table->rememberToken();
             $table->timestamps();
         });
