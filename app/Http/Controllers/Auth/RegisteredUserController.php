@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\UserInformation; // <-- ADD THIS
+use App\Models\UserInformation;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\DB; // <-- ADD THIS FOR TRANSACTIONS
+use Illuminate\Support\Facades\DB;
 
 class RegisteredUserController extends Controller
 {
@@ -39,8 +39,9 @@ class RegisteredUserController extends Controller
             'firstName' => 'required|string|max:255',
             'middleName' => 'nullable|string|max:255',
             'surName' => 'required|string|max:255',
-            'userEmail' => 'required|string|lowercase|email|max:255|unique:tblUsers,userEmail',
+            'userEmail' => 'required|string|lowercase|email|max:255|unique:login_users,userEmail', // Fixed table name
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'userOffice' => 'nullable|string|max:255', // <-- ADD THIS VALIDATION
             
             // User Information table fields
             'birthDate' => 'required|string|max:20',
@@ -68,6 +69,7 @@ class RegisteredUserController extends Controller
                 'userEmail' => $request->userEmail,
                 'userPassword' => Hash::make($request->password),
                 'userAccess' => 'Applicant', // Default value for new registrations
+                'userOffice' => $request->userOffice, // <-- ADD THIS LINE
             ]);
 
             // Generate a unique userInfoID
@@ -101,6 +103,7 @@ class RegisteredUserController extends Controller
                         'surName' => $user->surName,
                         'userEmail' => $user->userEmail,
                         'userAccess' => $user->userAccess,
+                        'userOffice' => $user->userOffice, // <-- ADD THIS LINE
                         'userInformation' => [
                             'userInfoID' => $userInformation->userInfoID,
                             'birthDate' => $userInformation->birthDate,
@@ -167,7 +170,7 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Add a method to show user with their information (optional)
+     * Show user with their information
      */
     public function show($userID): JsonResponse
     {
@@ -182,55 +185,4 @@ class RegisteredUserController extends Controller
             'data' => $user
         ]);
     }
-
-    /**
-     * Update user information (optional)
-     */
-    /*public function updateInformation(Request $request, $userID): JsonResponse
-    {
-        $user = User::where('userID', $userID)->first();
-        
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-        
-        $request->validate([
-            'birthDate' => 'sometimes|string|max:20',
-            'userAge' => 'sometimes|integer|min:1|max:150',
-            'userEthnicity' => 'sometimes|string|max:100',
-            'userProvince' => 'sometimes|string|max:100',
-            'userMunicipality' => 'sometimes|string|max:100',
-            'userBarangay' => 'sometimes|string|max:100',
-            'userPurpose' => 'sometimes|string|max:255',
-        ]);
-        
-        $userInformation = $user->userInformation;
-        
-        if (!$userInformation) {
-            // Create if doesn't exist
-            $userInfoID = $this->generateUserInfoID();
-            $userInformation = UserInformation::create([
-                'userInfoID' => $userInfoID,
-                'userID' => $user->userID,
-                'birthDate' => $request->birthDate,
-                'userAge' => $request->userAge,
-                'userEthnicity' => $request->userEthnicity,
-                'userProvince' => $request->userProvince,
-                'userMunicipality' => $request->userMunicipality,
-                'userBarangay' => $request->userBarangay,
-                'userPurpose' => $request->userPurpose,
-            ]);
-        } else {
-            // Update existing
-            $userInformation->update($request->only([
-                'birthDate', 'userAge', 'userEthnicity', 
-                'userProvince', 'userMunicipality', 'userBarangay', 'userPurpose'
-            ]));
-        }
-        
-        return response()->json([
-            'message' => 'User information updated successfully',
-            'data' => $userInformation
-        ]);
-    }*/
 }

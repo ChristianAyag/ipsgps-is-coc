@@ -51,8 +51,8 @@ class User extends Authenticatable
         'surName',
         'userEmail',
         'userPassword',
-        'userOffice',
-        'userAccess', // <-- ADD THIS LINE
+        'userAccess',
+        'userOffice', // <-- ADD THIS LINE
     ];
 
     /**
@@ -91,5 +91,25 @@ class User extends Authenticatable
     public function hasAccess(string $level): bool
     {
         return $this->userAccess === $level;
+    }
+
+    /**
+     * Get user's full name
+     */
+    public function getFullNameAttribute(): string
+    {
+        return trim($this->firstName . ' ' . ($this->middleName ?? '') . ' ' . $this->surName);
+    }
+
+    /**
+     * Get user's office location (if you want to combine office with other info)
+     */
+    public function getOfficeDetailsAttribute(): ?string
+    {
+        if (!$this->userOffice) {
+            return null;
+        }
+        
+        return $this->userOffice . ' - ' . $this->fullName;
     }
 }
