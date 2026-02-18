@@ -43,9 +43,7 @@ class RegisteredUserController extends Controller
             'surName' => 'required|string|max:255',
             'userEmail' => 'required|string|lowercase|email|max:255|unique:login_users,userEmail',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            // userOffice is NOT required for applicants
-            
-            // User Information table fields
+
             'birthDate' => 'required|date',
             'userAge' => 'required|integer|min:1|max:150',
             'userEthnicity' => 'required|string|max:100',
