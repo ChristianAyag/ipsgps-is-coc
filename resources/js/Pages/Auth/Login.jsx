@@ -7,72 +7,33 @@ import TextInput from '@/Components/TextInput';
 import Checkbox from '@/Components/Checkbox';
 
 export default function Login({ status, canResetPassword }) {
-    const [isLogin, setIsLogin] = useState(true);
-    const [showLoginPassword, setShowLoginPassword] = useState(false);
-    const [showRegisterPassword, setShowRegisterPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     
-    // Update login form to use userID (matches your model's primary key)
     const { data, setData, post, processing, errors, reset } = useForm({
-        userID: '', // Primary key field
-        userPassword: '', // Changed to match your model's field name
+        email: '',
+        password: '',
         remember: false,
-    });
-
-    const registerForm = useForm({
-        userID: '', // Custom user ID
-        firstName: '',
-        middleName: '',
-        surName: '',
-        userEmail: '', // Changed to match your model's field name
-        userPassword: '', // Changed to match your model's field name
-        userPassword_confirmation: '', // For password confirmation
-        userAccess: 'applicant', // Default role
-        userOffice: '',
-        terms: false,
     });
 
     useEffect(() => {
         return () => {
-            reset('userPassword');
+            reset('password');
         };
     }, []);
 
-    // Reset password visibility when switching tabs
-    useEffect(() => {
-        setShowLoginPassword(false);
-        setShowRegisterPassword(false);
-        setShowConfirmPassword(false);
-    }, [isLogin]);
-
-    const submitLogin = (e) => {
+    const submit = (e) => {
         e.preventDefault();
         post(route('login'));
     };
 
-    const submitRegister = (e) => {
+    const togglePassword = (e) => {
         e.preventDefault();
-        registerForm.post(route('register'));
-    };
-
-    const toggleLoginPassword = (e) => {
-        e.preventDefault();
-        setShowLoginPassword(!showLoginPassword);
-    };
-
-    const toggleRegisterPassword = (e) => {
-        e.preventDefault();
-        setShowRegisterPassword(!showRegisterPassword);
-    };
-
-    const toggleConfirmPassword = (e) => {
-        e.preventDefault();
-        setShowConfirmPassword(!showConfirmPassword);
+        setShowPassword(!showPassword);
     };
 
     return (
         <>
-            <Head title={isLogin ? "Log in" : "Sign Up"} />
+            <Head title="Log in" />
             
             <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100">
                 {/* Header with Logo */}
@@ -82,33 +43,23 @@ export default function Login({ status, canResetPassword }) {
                             {/* Simple Text Logo */}
                             <div className="flex items-center">
                                 <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                    YourApp
+                                    IPSGPS
                                 </span>
                             </div>
                             {/* Navigation Buttons */}
                             <div className="flex items-center space-x-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsLogin(true)}
-                                    className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-                                        isLogin 
-                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
-                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                                    }`}
+                                <Link
+                                    href={route('login')}
+                                    className="px-5 py-2.5 rounded-lg font-medium transition-all duration-200 bg-blue-600 text-white shadow-lg shadow-blue-200"
                                 >
                                     Log In
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsLogin(false)}
-                                    className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-200 ${
-                                        !isLogin 
-                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
-                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                                    }`}
+                                </Link>
+                                <Link
+                                    href={route('register')}
+                                    className="px-5 py-2.5 rounded-lg font-medium transition-all duration-200 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                                 >
                                     Sign Up
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -119,320 +70,117 @@ export default function Login({ status, canResetPassword }) {
                     <div className="w-full sm:max-w-md">
                         {/* Welcome Text */}
                         <div className="text-center mb-8">
-                            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                                {isLogin ? 'Welcome Back' : 'Create Account'}
-                            </h1>
-                            <p className="text-gray-600 text-lg">
-                                {isLogin ? 'Sign in with your User ID' : 'Join us today'}
-                            </p>
+                            <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+                            <p className="text-gray-600 text-lg">Sign in to your account</p>
                         </div>
 
                         {/* Form Card */}
                         <div className="bg-white shadow-xl rounded-2xl px-8 py-8">
                             {status && <div className="mb-4 font-medium text-sm text-green-600">{status}</div>}
 
-                            {/* Login Form */}
-                            {isLogin ? (
-                                <form onSubmit={submitLogin}>
-                                    {/* User ID Field */}
-                                    <div className="mb-6">
-                                        <InputLabel htmlFor="userID" value="User ID" className="text-gray-700 font-medium mb-2" />
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">👤</span>
-                                            <TextInput
-                                                id="userID"
-                                                type="text"
-                                                name="userID"
-                                                value={data.userID}
-                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="Enter your User ID"
-                                                autoComplete="username"
-                                                isFocused={true}
-                                                onChange={(e) => setData('userID', e.target.value)}
-                                            />
-                                        </div>
-                                        <InputError message={errors.userID} className="mt-2" />
+                            <form onSubmit={submit}>
+                                {/* Email Field */}
+                                <div className="mb-6">
+                                    <InputLabel htmlFor="email" value="Email" className="text-gray-700 font-medium mb-2" />
+                                    <div className="relative">
+                                        <TextInput
+                                            id="email"
+                                            type="email"
+                                            name="email"
+                                            value={data.email}
+                                            className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
+                                            placeholder="you@example.com"
+                                            autoComplete="username"
+                                            isFocused={true}
+                                            onChange={(e) => setData('email', e.target.value)}
+                                        />
                                     </div>
+                                    <InputError message={errors.email} className="mt-2" />
+                                </div>
 
-                                    {/* Password Field */}
-                                    <div className="mb-6">
-                                        <InputLabel htmlFor="userPassword" value="Password" className="text-gray-700 font-medium mb-2" />
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">🔒</span>
-                                            <input
-                                                id="userPassword"
-                                                type={showLoginPassword ? "text" : "password"}
-                                                name="userPassword"
-                                                value={data.userPassword}
-                                                className="mt-1 block w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="Enter your password"
-                                                autoComplete="current-password"
-                                                onChange={(e) => setData('userPassword', e.target.value)}
-                                                onContextMenu={(e) => e.preventDefault()}
-                                                onCopy={(e) => e.preventDefault()}
-                                                onPaste={(e) => e.preventDefault()}
-                                                style={{
-                                                    WebkitTextSecurity: showLoginPassword ? 'none' : 'disc',
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={toggleLoginPassword}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none z-10 bg-white/50 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center"
-                                                tabIndex="-1"
-                                            >
-                                                {showLoginPassword ? '👁️' : '👁️‍🗨️'}
-                                            </button>
-                                        </div>
-                                        <InputError message={errors.userPassword} className="mt-2" />
-                                    </div>
-
-                                    {/* Remember Me and Forgot Password */}
-                                    <div className="flex items-center justify-between mb-8">
-                                        <label className="flex items-center">
-                                            <Checkbox
-                                                name="remember"
-                                                checked={data.remember}
-                                                onChange={(e) => setData('remember', e.target.checked)}
-                                                className="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
-                                            />
-                                            <span className="ml-2 text-sm text-gray-600">Remember me</span>
-                                        </label>
-
-                                        {canResetPassword && (
-                                            <Link
-                                                href={route('password.request')}
-                                                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                                            >
-                                                Forgot your password?
-                                            </Link>
-                                        )}
-                                    </div>
-
-                                    {/* Submit Button */}
-                                    <div className="flex items-center justify-center">
-                                        <PrimaryButton
-                                            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-200 transition-all"
-                                            disabled={processing}
+                                {/* Password Field */}
+                                <div className="mb-6">
+                                    <InputLabel htmlFor="password" value="Password" className="text-gray-700 font-medium mb-2" />
+                                    <div className="relative">
+                                        <input
+                                            id="password"
+                                            type={showPassword ? "text" : "password"}
+                                            name="password"
+                                            value={data.password}
+                                            className="mt-1 block w-full px-4 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
+                                            placeholder="Enter your password"
+                                            autoComplete="current-password"
+                                            onChange={(e) => setData('password', e.target.value)}
+                                            onContextMenu={(e) => e.preventDefault()}
+                                            onCopy={(e) => e.preventDefault()}
+                                            onPaste={(e) => e.preventDefault()}
+                                            style={{
+                                                WebkitTextSecurity: showPassword ? 'none' : 'disc',
+                                            }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={togglePassword}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none z-10"
+                                            tabIndex="-1"
                                         >
-                                            Log In
-                                        </PrimaryButton>
+                                            {showPassword ? (
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                            ) : (
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21" />
+                                                </svg>
+                                            )}
+                                        </button>
                                     </div>
-                                </form>
-                            ) : (
-                                /* Registration Form */
-                                <form onSubmit={submitRegister}>
-                                    {/* User ID Field */}
-                                    <div className="mb-6">
-                                        <InputLabel htmlFor="register-userID" value="User ID" className="text-gray-700 font-medium mb-2" />
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">🆔</span>
-                                            <TextInput
-                                                id="register-userID"
-                                                type="text"
-                                                name="userID"
-                                                value={registerForm.data.userID}
-                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="Choose a User ID"
-                                                autoComplete="username"
-                                                isFocused={true}
-                                                onChange={(e) => registerForm.setData('userID', e.target.value)}
-                                            />
-                                        </div>
-                                        <InputError message={registerForm.errors.userID} className="mt-2" />
-                                    </div>
+                                    <InputError message={errors.password} className="mt-2" />
+                                </div>
 
-                                    {/* First Name Field */}
-                                    <div className="mb-6">
-                                        <InputLabel htmlFor="firstName" value="First Name" className="text-gray-700 font-medium mb-2" />
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">👤</span>
-                                            <TextInput
-                                                id="firstName"
-                                                name="firstName"
-                                                value={registerForm.data.firstName}
-                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="First Name"
-                                                autoComplete="given-name"
-                                                onChange={(e) => registerForm.setData('firstName', e.target.value)}
-                                            />
-                                        </div>
-                                        <InputError message={registerForm.errors.firstName} className="mt-2" />
-                                    </div>
+                                {/* Remember Me and Forgot Password */}
+                                <div className="flex items-center justify-between mb-8">
+                                    <label className="flex items-center">
+                                        <Checkbox
+                                            name="remember"
+                                            checked={data.remember}
+                                            onChange={(e) => setData('remember', e.target.checked)}
+                                            className="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
+                                        />
+                                        <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                                    </label>
 
-                                    {/* Middle Name Field (Optional) */}
-                                    <div className="mb-6">
-                                        <InputLabel htmlFor="middleName" value="Middle Name (Optional)" className="text-gray-700 font-medium mb-2" />
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">👤</span>
-                                            <TextInput
-                                                id="middleName"
-                                                name="middleName"
-                                                value={registerForm.data.middleName}
-                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="Middle Name"
-                                                autoComplete="additional-name"
-                                                onChange={(e) => registerForm.setData('middleName', e.target.value)}
-                                            />
-                                        </div>
-                                        <InputError message={registerForm.errors.middleName} className="mt-2" />
-                                    </div>
-
-                                    {/* Surname Field */}
-                                    <div className="mb-6">
-                                        <InputLabel htmlFor="surName" value="Surname" className="text-gray-700 font-medium mb-2" />
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">👤</span>
-                                            <TextInput
-                                                id="surName"
-                                                name="surName"
-                                                value={registerForm.data.surName}
-                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="Surname"
-                                                autoComplete="family-name"
-                                                onChange={(e) => registerForm.setData('surName', e.target.value)}
-                                            />
-                                        </div>
-                                        <InputError message={registerForm.errors.surName} className="mt-2" />
-                                    </div>
-
-                                    {/* Email Field */}
-                                    <div className="mb-6">
-                                        <InputLabel htmlFor="userEmail" value="Email Address" className="text-gray-700 font-medium mb-2" />
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">📧</span>
-                                            <TextInput
-                                                id="userEmail"
-                                                type="email"
-                                                name="userEmail"
-                                                value={registerForm.data.userEmail}
-                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="you@example.com"
-                                                autoComplete="email"
-                                                onChange={(e) => registerForm.setData('userEmail', e.target.value)}
-                                            />
-                                        </div>
-                                        <InputError message={registerForm.errors.userEmail} className="mt-2" />
-                                    </div>
-
-                                    {/* Office Field */}
-                                    <div className="mb-6">
-                                        <InputLabel htmlFor="userOffice" value="Office/Department" className="text-gray-700 font-medium mb-2" />
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">🏢</span>
-                                            <TextInput
-                                                id="userOffice"
-                                                type="text"
-                                                name="userOffice"
-                                                value={registerForm.data.userOffice}
-                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="Your Office/Department"
-                                                onChange={(e) => registerForm.setData('userOffice', e.target.value)}
-                                            />
-                                        </div>
-                                        <InputError message={registerForm.errors.userOffice} className="mt-2" />
-                                    </div>
-
-                                    {/* Password Field */}
-                                    <div className="mb-6">
-                                        <InputLabel htmlFor="register-userPassword" value="Password" className="text-gray-700 font-medium mb-2" />
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">🔒</span>
-                                            <input
-                                                id="register-userPassword"
-                                                type={showRegisterPassword ? "text" : "password"}
-                                                name="userPassword"
-                                                value={registerForm.data.userPassword}
-                                                className="mt-1 block w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="Create a password"
-                                                autoComplete="new-password"
-                                                onChange={(e) => registerForm.setData('userPassword', e.target.value)}
-                                                onContextMenu={(e) => e.preventDefault()}
-                                                onCopy={(e) => e.preventDefault()}
-                                                onPaste={(e) => e.preventDefault()}
-                                                style={{
-                                                    WebkitTextSecurity: showRegisterPassword ? 'none' : 'disc',
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={toggleRegisterPassword}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none z-10 bg-white/50 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center"
-                                                tabIndex="-1"
-                                            >
-                                                {showRegisterPassword ? '👁️' : '👁️‍🗨️'}
-                                            </button>
-                                        </div>
-                                        <InputError message={registerForm.errors.userPassword} className="mt-2" />
-                                    </div>
-
-                                    {/* Confirm Password Field */}
-                                    <div className="mb-6">
-                                        <InputLabel htmlFor="userPassword_confirmation" value="Confirm Password" className="text-gray-700 font-medium mb-2" />
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">🔒</span>
-                                            <input
-                                                id="userPassword_confirmation"
-                                                type={showConfirmPassword ? "text" : "password"}
-                                                name="userPassword_confirmation"
-                                                value={registerForm.data.userPassword_confirmation}
-                                                className="mt-1 block w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="Confirm your password"
-                                                autoComplete="new-password"
-                                                onChange={(e) => registerForm.setData('userPassword_confirmation', e.target.value)}
-                                                onContextMenu={(e) => e.preventDefault()}
-                                                onCopy={(e) => e.preventDefault()}
-                                                onPaste={(e) => e.preventDefault()}
-                                                style={{
-                                                    WebkitTextSecurity: showConfirmPassword ? 'none' : 'disc',
-                                                }}
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={toggleConfirmPassword}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none z-10 bg-white/50 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center"
-                                                tabIndex="-1"
-                                            >
-                                                {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
-                                            </button>
-                                        </div>
-                                        <InputError message={registerForm.errors.userPassword_confirmation} className="mt-2" />
-                                    </div>
-
-                                    {/* Hidden userAccess field (defaults to 'applicant') */}
-                                    <input
-                                        type="hidden"
-                                        name="userAccess"
-                                        value={registerForm.data.userAccess}
-                                    />
-
-                                    {/* Terms Agreement */}
-                                    <div className="mb-8">
-                                        <label className="flex items-center">
-                                            <Checkbox
-                                                name="terms"
-                                                checked={registerForm.data.terms}
-                                                onChange={(e) => registerForm.setData('terms', e.target.checked)}
-                                                className="rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500"
-                                            />
-                                            <span className="ml-2 text-sm text-gray-600">
-                                                📝 I agree to the <Link href="#" className="text-blue-600 hover:text-blue-800">Terms of Service</Link> and <Link href="#" className="text-blue-600 hover:text-blue-800">Privacy Policy</Link>
-                                            </span>
-                                        </label>
-                                        <InputError message={registerForm.errors.terms} className="mt-2" />
-                                    </div>
-
-                                    {/* Submit Button */}
-                                    <div className="flex items-center justify-center">
-                                        <PrimaryButton
-                                            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-200 transition-all"
-                                            disabled={registerForm.processing}
+                                    {canResetPassword && (
+                                        <Link
+                                            href={route('password.request')}
+                                            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                                         >
-                                            Create Account
-                                        </PrimaryButton>
-                                    </div>
-                                </form>
-                            )}
+                                            Forgot your password?
+                                        </Link>
+                                    )}
+                                </div>
+
+                                {/* Submit Button */}
+                                <div className="flex items-center justify-center">
+                                    <PrimaryButton
+                                        className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg rounded-xl shadow-lg shadow-blue-200 transition-all"
+                                        disabled={processing}
+                                    >
+                                        Log In
+                                    </PrimaryButton>
+                                </div>
+
+                                {/* Register Link */}
+                                <div className="text-center mt-6">
+                                    <span className="text-sm text-gray-600">
+                                        Don't have an account?{' '}
+                                        <Link href={route('register')} className="text-blue-600 hover:text-blue-800 font-medium">
+                                            Sign up
+                                        </Link>
+                                    </span>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -441,18 +189,20 @@ export default function Login({ status, canResetPassword }) {
                 <footer className="bg-white/80 backdrop-blur-sm py-4">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <p className="text-center text-sm text-gray-500">
-                            © 2026 YourApp. All rights reserved.
+                            {/* © 2026 IPSGPS. All rights reserved. */}
                         </p>
                     </div>
                 </footer>
             </div>
 
-            {/* Fixed style section - removed jsx attribute */}
-            <style>{`
+            {/* Global styles to hide browser's password reveal */}
+            <style jsx>{`
                 input[type="password"]::-ms-reveal,
                 input[type="password"]::-ms-clear,
                 input[type="password"]::-webkit-textfield-decoration-container,
-                input[type="password"]::-webkit-credentials-auto-fill-button {
+                input[type="password"]::-webkit-credentials-auto-fill-button,
+                input[type="password"]::-webkit-contacts-auto-fill-button,
+                input[type="password"]::-webkit-strong-password-auto-fill-button {
                     display: none !important;
                     visibility: hidden !important;
                     pointer-events: none !important;
