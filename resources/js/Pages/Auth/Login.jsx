@@ -12,23 +12,29 @@ export default function Login({ status, canResetPassword }) {
     const [showRegisterPassword, setShowRegisterPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     
+    // Update login form to use userID (matches your model's primary key)
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        password: '',
+        userID: '', // Primary key field
+        userPassword: '', // Changed to match your model's field name
         remember: false,
     });
 
     const registerForm = useForm({
-        name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
+        userID: '', // Custom user ID
+        firstName: '',
+        middleName: '',
+        surName: '',
+        userEmail: '', // Changed to match your model's field name
+        userPassword: '', // Changed to match your model's field name
+        userPassword_confirmation: '', // For password confirmation
+        userAccess: 'applicant', // Default role
+        userOffice: '',
         terms: false,
     });
 
     useEffect(() => {
         return () => {
-            reset('password');
+            reset('userPassword');
         };
     }, []);
 
@@ -117,7 +123,7 @@ export default function Login({ status, canResetPassword }) {
                                 {isLogin ? 'Welcome Back' : 'Create Account'}
                             </h1>
                             <p className="text-gray-600 text-lg">
-                                {isLogin ? 'Sign in to your account' : 'Join us today'}
+                                {isLogin ? 'Sign in with your User ID' : 'Join us today'}
                             </p>
                         </div>
 
@@ -128,49 +134,45 @@ export default function Login({ status, canResetPassword }) {
                             {/* Login Form */}
                             {isLogin ? (
                                 <form onSubmit={submitLogin}>
-                                    {/* Email Field */}
+                                    {/* User ID Field */}
                                     <div className="mb-6">
-                                        <InputLabel htmlFor="email" value="Email" className="text-gray-700 font-medium mb-2" />
+                                        <InputLabel htmlFor="userID" value="User ID" className="text-gray-700 font-medium mb-2" />
                                         <div className="relative">
-                                            <span className="absolute left-4 top-3.5 text-gray-400">📧</span>
+                                            <span className="absolute left-4 top-3.5 text-gray-400">👤</span>
                                             <TextInput
-                                                id="email"
-                                                type="email"
-                                                name="email"
-                                                value={data.email}
+                                                id="userID"
+                                                type="text"
+                                                name="userID"
+                                                value={data.userID}
                                                 className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="you@example.com"
+                                                placeholder="Enter your User ID"
                                                 autoComplete="username"
                                                 isFocused={true}
-                                                onChange={(e) => setData('email', e.target.value)}
+                                                onChange={(e) => setData('userID', e.target.value)}
                                             />
                                         </div>
-                                        <InputError message={errors.email} className="mt-2" />
+                                        <InputError message={errors.userID} className="mt-2" />
                                     </div>
 
-                                    {/* Password Field with Persistent Emoji Toggle */}
+                                    {/* Password Field */}
                                     <div className="mb-6">
-                                        <InputLabel htmlFor="password" value="Password" className="text-gray-700 font-medium mb-2" />
+                                        <InputLabel htmlFor="userPassword" value="Password" className="text-gray-700 font-medium mb-2" />
                                         <div className="relative">
                                             <span className="absolute left-4 top-3.5 text-gray-400">🔒</span>
                                             <input
-                                                id="password"
+                                                id="userPassword"
                                                 type={showLoginPassword ? "text" : "password"}
-                                                name="password"
-                                                value={data.password}
+                                                name="userPassword"
+                                                value={data.userPassword}
                                                 className="mt-1 block w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                                 placeholder="Enter your password"
                                                 autoComplete="current-password"
-                                                onChange={(e) => setData('password', e.target.value)}
-                                                // Multiple attributes to disable browser's password reveal
+                                                onChange={(e) => setData('userPassword', e.target.value)}
                                                 onContextMenu={(e) => e.preventDefault()}
                                                 onCopy={(e) => e.preventDefault()}
                                                 onPaste={(e) => e.preventDefault()}
                                                 style={{
                                                     WebkitTextSecurity: showLoginPassword ? 'none' : 'disc',
-                                                    // Hide browser's native reveal button
-                                                    '::-ms-reveal': 'display: none',
-                                                    '::-ms-clear': 'display: none'
                                                 }}
                                             />
                                             <button
@@ -182,7 +184,7 @@ export default function Login({ status, canResetPassword }) {
                                                 {showLoginPassword ? '👁️' : '👁️‍🗨️'}
                                             </button>
                                         </div>
-                                        <InputError message={errors.password} className="mt-2" />
+                                        <InputError message={errors.userPassword} className="mt-2" />
                                     </div>
 
                                     {/* Remember Me and Forgot Password */}
@@ -220,67 +222,136 @@ export default function Login({ status, canResetPassword }) {
                             ) : (
                                 /* Registration Form */
                                 <form onSubmit={submitRegister}>
-                                    {/* Full Name Field */}
+                                    {/* User ID Field */}
                                     <div className="mb-6">
-                                        <InputLabel htmlFor="name" value="Full Name" className="text-gray-700 font-medium mb-2" />
+                                        <InputLabel htmlFor="register-userID" value="User ID" className="text-gray-700 font-medium mb-2" />
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-3.5 text-gray-400">🆔</span>
+                                            <TextInput
+                                                id="register-userID"
+                                                type="text"
+                                                name="userID"
+                                                value={registerForm.data.userID}
+                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
+                                                placeholder="Choose a User ID"
+                                                autoComplete="username"
+                                                isFocused={true}
+                                                onChange={(e) => registerForm.setData('userID', e.target.value)}
+                                            />
+                                        </div>
+                                        <InputError message={registerForm.errors.userID} className="mt-2" />
+                                    </div>
+
+                                    {/* First Name Field */}
+                                    <div className="mb-6">
+                                        <InputLabel htmlFor="firstName" value="First Name" className="text-gray-700 font-medium mb-2" />
                                         <div className="relative">
                                             <span className="absolute left-4 top-3.5 text-gray-400">👤</span>
                                             <TextInput
-                                                id="name"
-                                                name="name"
-                                                value={registerForm.data.name}
+                                                id="firstName"
+                                                name="firstName"
+                                                value={registerForm.data.firstName}
                                                 className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                                placeholder="John Doe"
-                                                autoComplete="name"
-                                                isFocused={true}
-                                                onChange={(e) => registerForm.setData('name', e.target.value)}
+                                                placeholder="First Name"
+                                                autoComplete="given-name"
+                                                onChange={(e) => registerForm.setData('firstName', e.target.value)}
                                             />
                                         </div>
-                                        <InputError message={registerForm.errors.name} className="mt-2" />
+                                        <InputError message={registerForm.errors.firstName} className="mt-2" />
+                                    </div>
+
+                                    {/* Middle Name Field (Optional) */}
+                                    <div className="mb-6">
+                                        <InputLabel htmlFor="middleName" value="Middle Name (Optional)" className="text-gray-700 font-medium mb-2" />
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-3.5 text-gray-400">👤</span>
+                                            <TextInput
+                                                id="middleName"
+                                                name="middleName"
+                                                value={registerForm.data.middleName}
+                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
+                                                placeholder="Middle Name"
+                                                autoComplete="additional-name"
+                                                onChange={(e) => registerForm.setData('middleName', e.target.value)}
+                                            />
+                                        </div>
+                                        <InputError message={registerForm.errors.middleName} className="mt-2" />
+                                    </div>
+
+                                    {/* Surname Field */}
+                                    <div className="mb-6">
+                                        <InputLabel htmlFor="surName" value="Surname" className="text-gray-700 font-medium mb-2" />
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-3.5 text-gray-400">👤</span>
+                                            <TextInput
+                                                id="surName"
+                                                name="surName"
+                                                value={registerForm.data.surName}
+                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
+                                                placeholder="Surname"
+                                                autoComplete="family-name"
+                                                onChange={(e) => registerForm.setData('surName', e.target.value)}
+                                            />
+                                        </div>
+                                        <InputError message={registerForm.errors.surName} className="mt-2" />
                                     </div>
 
                                     {/* Email Field */}
                                     <div className="mb-6">
-                                        <InputLabel htmlFor="register-email" value="Email" className="text-gray-700 font-medium mb-2" />
+                                        <InputLabel htmlFor="userEmail" value="Email Address" className="text-gray-700 font-medium mb-2" />
                                         <div className="relative">
                                             <span className="absolute left-4 top-3.5 text-gray-400">📧</span>
                                             <TextInput
-                                                id="register-email"
+                                                id="userEmail"
                                                 type="email"
-                                                name="email"
-                                                value={registerForm.data.email}
+                                                name="userEmail"
+                                                value={registerForm.data.userEmail}
                                                 className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                                 placeholder="you@example.com"
-                                                autoComplete="username"
-                                                onChange={(e) => registerForm.setData('email', e.target.value)}
+                                                autoComplete="email"
+                                                onChange={(e) => registerForm.setData('userEmail', e.target.value)}
                                             />
                                         </div>
-                                        <InputError message={registerForm.errors.email} className="mt-2" />
+                                        <InputError message={registerForm.errors.userEmail} className="mt-2" />
                                     </div>
 
-                                    {/* Password Field with Persistent Emoji Toggle */}
+                                    {/* Office Field */}
                                     <div className="mb-6">
-                                        <InputLabel htmlFor="register-password" value="Password" className="text-gray-700 font-medium mb-2" />
+                                        <InputLabel htmlFor="userOffice" value="Office/Department" className="text-gray-700 font-medium mb-2" />
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-3.5 text-gray-400">🏢</span>
+                                            <TextInput
+                                                id="userOffice"
+                                                type="text"
+                                                name="userOffice"
+                                                value={registerForm.data.userOffice}
+                                                className="mt-1 block w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
+                                                placeholder="Your Office/Department"
+                                                onChange={(e) => registerForm.setData('userOffice', e.target.value)}
+                                            />
+                                        </div>
+                                        <InputError message={registerForm.errors.userOffice} className="mt-2" />
+                                    </div>
+
+                                    {/* Password Field */}
+                                    <div className="mb-6">
+                                        <InputLabel htmlFor="register-userPassword" value="Password" className="text-gray-700 font-medium mb-2" />
                                         <div className="relative">
                                             <span className="absolute left-4 top-3.5 text-gray-400">🔒</span>
                                             <input
-                                                id="register-password"
+                                                id="register-userPassword"
                                                 type={showRegisterPassword ? "text" : "password"}
-                                                name="password"
-                                                value={registerForm.data.password}
+                                                name="userPassword"
+                                                value={registerForm.data.userPassword}
                                                 className="mt-1 block w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                                 placeholder="Create a password"
                                                 autoComplete="new-password"
-                                                onChange={(e) => registerForm.setData('password', e.target.value)}
-                                                // Multiple attributes to disable browser's password reveal
+                                                onChange={(e) => registerForm.setData('userPassword', e.target.value)}
                                                 onContextMenu={(e) => e.preventDefault()}
                                                 onCopy={(e) => e.preventDefault()}
                                                 onPaste={(e) => e.preventDefault()}
                                                 style={{
                                                     WebkitTextSecurity: showRegisterPassword ? 'none' : 'disc',
-                                                    // Hide browser's native reveal button
-                                                    '::-ms-reveal': 'display: none',
-                                                    '::-ms-clear': 'display: none'
                                                 }}
                                             />
                                             <button
@@ -292,32 +363,28 @@ export default function Login({ status, canResetPassword }) {
                                                 {showRegisterPassword ? '👁️' : '👁️‍🗨️'}
                                             </button>
                                         </div>
-                                        <InputError message={registerForm.errors.password} className="mt-2" />
+                                        <InputError message={registerForm.errors.userPassword} className="mt-2" />
                                     </div>
 
-                                    {/* Confirm Password Field with Persistent Emoji Toggle */}
+                                    {/* Confirm Password Field */}
                                     <div className="mb-6">
-                                        <InputLabel htmlFor="password_confirmation" value="Confirm Password" className="text-gray-700 font-medium mb-2" />
+                                        <InputLabel htmlFor="userPassword_confirmation" value="Confirm Password" className="text-gray-700 font-medium mb-2" />
                                         <div className="relative">
                                             <span className="absolute left-4 top-3.5 text-gray-400">🔒</span>
                                             <input
-                                                id="password_confirmation"
+                                                id="userPassword_confirmation"
                                                 type={showConfirmPassword ? "text" : "password"}
-                                                name="password_confirmation"
-                                                value={registerForm.data.password_confirmation}
+                                                name="userPassword_confirmation"
+                                                value={registerForm.data.userPassword_confirmation}
                                                 className="mt-1 block w-full pl-12 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                                 placeholder="Confirm your password"
                                                 autoComplete="new-password"
-                                                onChange={(e) => registerForm.setData('password_confirmation', e.target.value)}
-                                                // Multiple attributes to disable browser's password reveal
+                                                onChange={(e) => registerForm.setData('userPassword_confirmation', e.target.value)}
                                                 onContextMenu={(e) => e.preventDefault()}
                                                 onCopy={(e) => e.preventDefault()}
                                                 onPaste={(e) => e.preventDefault()}
                                                 style={{
                                                     WebkitTextSecurity: showConfirmPassword ? 'none' : 'disc',
-                                                    // Hide browser's native reveal button
-                                                    '::-ms-reveal': 'display: none',
-                                                    '::-ms-clear': 'display: none'
                                                 }}
                                             />
                                             <button
@@ -329,8 +396,15 @@ export default function Login({ status, canResetPassword }) {
                                                 {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
                                             </button>
                                         </div>
-                                        <InputError message={registerForm.errors.password_confirmation} className="mt-2" />
+                                        <InputError message={registerForm.errors.userPassword_confirmation} className="mt-2" />
                                     </div>
+
+                                    {/* Hidden userAccess field (defaults to 'applicant') */}
+                                    <input
+                                        type="hidden"
+                                        name="userAccess"
+                                        value={registerForm.data.userAccess}
+                                    />
 
                                     {/* Terms Agreement */}
                                     <div className="mb-8">
@@ -373,14 +447,12 @@ export default function Login({ status, canResetPassword }) {
                 </footer>
             </div>
 
-            {/* Add this style tag to hide browser's password reveal globally */}
-            <style jsx>{`
+            {/* Fixed style section - removed jsx attribute */}
+            <style>{`
                 input[type="password"]::-ms-reveal,
                 input[type="password"]::-ms-clear,
                 input[type="password"]::-webkit-textfield-decoration-container,
-                input[type="password"]::-webkit-credentials-auto-fill-button,
-                input[type="password"]::-webkit-contacts-auto-fill-button,
-                input[type="password"]::-webkit-strong-password-auto-fill-button {
+                input[type="password"]::-webkit-credentials-auto-fill-button {
                     display: none !important;
                     visibility: hidden !important;
                     pointer-events: none !important;
