@@ -50,6 +50,7 @@ class User extends Authenticatable
         'firstName',
         'middleName',
         'surName',
+        'userSuffixName',
         'userEmail',
         'userPassword',
         'userAccess',
@@ -105,7 +106,7 @@ class User extends Authenticatable
      */
     public function userInformation()
     {
-        return $this->hasOne(RegsUserInformation::class, 'userID', 'userID');
+        return $this->hasOne(UserInformation::class, 'userID', 'userID');
     }
 
     /**

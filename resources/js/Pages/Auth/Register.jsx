@@ -12,23 +12,25 @@ export default function Register() {
     const [registrationStep, setRegistrationStep] = useState(1);
     
     const { data, setData, post, processing, errors, reset } = useForm({
-        // Step 1 fields
-        first_name: '',
-        middle_name: '',
-        last_name: '',
+        // Step 1 fields - Updated to match database schema (userID removed - auto-generated)
+        firstName: '', // Changed from first_name to firstName
+        middleName: '', // Changed from middle_name to middleName
+        surName: '', // Changed from last_name to surName
         suffix: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
+        userEmail: '', // Changed from email to userEmail
+        userPassword: '', // Changed from password to userPassword
+        userPassword_confirmation: '', // Changed from password_confirmation to userPassword_confirmation
         
         // Step 2 fields
-        birth_date: '',
-        age: '',
-        ethnicity: '',
-        province: '',
-        municipality: '',
-        barangay: '',
-        purpose: '',
+        birthDate: '',
+        userAge: '',
+        userEthnicity: '',
+        userProvince: '',
+        userMunicipality: '',
+        userBarangay: '',
+        userPurpose: '',
+        userAccess: 'applicant', // Added userAccess with default value
+        userOffice: '', // Added userOffice field
         terms: false,
     });
 
@@ -100,7 +102,7 @@ export default function Register() {
 
     useEffect(() => {
         return () => {
-            reset('password', 'password_confirmation');
+            reset('userPassword', 'userPassword_confirmation');
         };
     }, []);
 
@@ -155,48 +157,48 @@ export default function Register() {
                             <div className="grid grid-cols-12 gap-3">
                                 {/* First Name */}
                                 <div className="col-span-12 sm:col-span-4">
-                                    <InputLabel htmlFor="first_name" value="First" className="text-gray-700 font-medium mb-2" />
+                                    <InputLabel htmlFor="firstName" value="First Name" className="text-gray-700 font-medium mb-2" />
                                     <TextInput
-                                        id="first_name"
-                                        name="first_name"
-                                        value={data.first_name}
+                                        id="firstName"
+                                        name="firstName"
+                                        value={data.firstName}
                                         className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                         placeholder="First"
                                         autoComplete="given-name"
                                         isFocused={true}
-                                        onChange={(e) => setData('first_name', e.target.value)}
+                                        onChange={(e) => setData('firstName', e.target.value)}
                                     />
-                                    <InputError message={errors.first_name} className="mt-2" />
+                                    <InputError message={errors.firstName} className="mt-2" />
                                 </div>
 
                                 {/* Middle Name */}
                                 <div className="col-span-12 sm:col-span-4">
-                                    <InputLabel htmlFor="middle_name" value="Middle" className="text-gray-700 font-medium mb-2" />
+                                    <InputLabel htmlFor="middleName" value="Middle Name" className="text-gray-700 font-medium mb-2" />
                                     <TextInput
-                                        id="middle_name"
-                                        name="middle_name"
-                                        value={data.middle_name}
+                                        id="middleName"
+                                        name="middleName"
+                                        value={data.middleName}
                                         className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                         placeholder="Middle"
                                         autoComplete="additional-name"
-                                        onChange={(e) => setData('middle_name', e.target.value)}
+                                        onChange={(e) => setData('middleName', e.target.value)}
                                     />
-                                    <InputError message={errors.middle_name} className="mt-2" />
+                                    <InputError message={errors.middleName} className="mt-2" />
                                 </div>
 
                                 {/* Last Name */}
                                 <div className="col-span-12 sm:col-span-4">
-                                    <InputLabel htmlFor="last_name" value="Last" className="text-gray-700 font-medium mb-2" />
+                                    <InputLabel htmlFor="surName" value="Last Name" className="text-gray-700 font-medium mb-2" />
                                     <TextInput
-                                        id="last_name"
-                                        name="last_name"
-                                        value={data.last_name}
+                                        id="surName"
+                                        name="surName"
+                                        value={data.surName}
                                         className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                         placeholder="Last"
                                         autoComplete="family-name"
-                                        onChange={(e) => setData('last_name', e.target.value)}
+                                        onChange={(e) => setData('surName', e.target.value)}
                                     />
-                                    <InputError message={errors.last_name} className="mt-2" />
+                                    <InputError message={errors.surName} className="mt-2" />
                                 </div>
                             </div>
                         </div>
@@ -222,40 +224,40 @@ export default function Register() {
                             </div>
                         </div>
 
-                        {/* Email Field - 3/4 width */}
+                        {/* Email Field */}
                         <div className="mb-6">
                             <div className="w-full sm:w-3/4">
-                                <InputLabel htmlFor="email" value="Email Address" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="userEmail" value="Email Address" className="text-gray-700 font-medium mb-2" />
                                 <div className="relative">
                                     <TextInput
-                                        id="email"
+                                        id="userEmail"
                                         type="email"
-                                        name="email"
-                                        value={data.email}
+                                        name="userEmail"
+                                        value={data.userEmail}
                                         className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                         placeholder="you@example.com"
-                                        autoComplete="username"
-                                        onChange={(e) => setData('email', e.target.value)}
+                                        autoComplete="email"
+                                        onChange={(e) => setData('userEmail', e.target.value)}
                                     />
                                 </div>
-                                <InputError message={errors.email} className="mt-2" />
+                                <InputError message={errors.userEmail} className="mt-2" />
                             </div>
                         </div>
 
-                        {/* Password Field - 3/4 width */}
+                        {/* Password Field */}
                         <div className="mb-6">
                             <div className="w-full sm:w-3/4">
-                                <InputLabel htmlFor="password" value="Password" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="userPassword" value="userPassword" className="text-gray-700 font-medium mb-2" />
                                 <div className="relative">
                                     <input
-                                        id="password"
+                                        id="userPassword"
                                         type={showPassword ? "text" : "password"}
-                                        name="password"
-                                        value={data.password}
+                                        name="userPassword"
+                                        value={data.userPassword}
                                         className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all pr-12"
                                         placeholder="Create a password"
                                         autoComplete="new-password"
-                                        onChange={(e) => setData('password', e.target.value)}
+                                        onChange={(e) => setData('userPassword', e.target.value)}
                                         onContextMenu={(e) => e.preventDefault()}
                                         onCopy={(e) => e.preventDefault()}
                                         onPaste={(e) => e.preventDefault()}
@@ -278,24 +280,24 @@ export default function Register() {
                                         )}
                                     </button>
                                 </div>
-                                <InputError message={errors.password} className="mt-2" />
+                                <InputError message={errors.userPassword} className="mt-2" />
                             </div>
                         </div>
 
-                        {/* Confirm Password Field - 3/4 width */}
+                        {/* Confirm Password Field */}
                         <div className="mb-6">
                             <div className="w-full sm:w-3/4">
-                                <InputLabel htmlFor="password_confirmation" value="Confirm Password" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="userPassword_confirmation" value="Confirm Password" className="text-gray-700 font-medium mb-2" />
                                 <div className="relative">
                                     <input
-                                        id="password_confirmation"
+                                        id="userPassword_confirmation"
                                         type={showConfirmPassword ? "text" : "password"}
-                                        name="password_confirmation"
-                                        value={data.password_confirmation}
+                                        name="userPassword_confirmation"
+                                        value={data.userPassword_confirmation}
                                         className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all pr-12"
                                         placeholder="Confirm your password"
                                         autoComplete="new-password"
-                                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                                        onChange={(e) => setData('userPassword_confirmation', e.target.value)}
                                         onContextMenu={(e) => e.preventDefault()}
                                         onCopy={(e) => e.preventDefault()}
                                         onPaste={(e) => e.preventDefault()}
@@ -318,9 +320,23 @@ export default function Register() {
                                         )}
                                     </button>
                                 </div>
-                                <InputError message={errors.password_confirmation} className="mt-2" />
+                                <InputError message={errors.userPassword_confirmation} className="mt-2" />
                             </div>
                         </div>
+
+                        {/* Hidden userAccess field (defaults to 'applicant') */}
+                        <input
+                            type="hidden"
+                            name="userAccess"
+                            value={data.userAccess}
+                        />
+
+                        {/* Hidden userOffice field (optional) */}
+                        <input
+                            type="hidden"
+                            name="userOffice"
+                            value={data.userOffice}
+                        />
 
                         {/* Next Button */}
                         <div className="flex items-center justify-center">
@@ -358,48 +374,48 @@ export default function Register() {
                             </div>
                         </div>
 
-                        {/* Birth Date and Age in one row - both manual inputs */}
+                        {/* Birth Date and Age in one row */}
                         <div className="grid grid-cols-12 gap-4 mb-6">
                             {/* Birth Date */}
                             <div className="col-span-12 sm:col-span-6">
-                                <InputLabel htmlFor="birth_date" value="Birth Date" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="birthDate" value="birthDate" className="text-gray-700 font-medium mb-2" />
                                 <TextInput
-                                    id="birth_date"
+                                    id="birthDate"
                                     type="date"
-                                    name="birth_date"
-                                    value={data.birth_date}
+                                    name="birthDate"
+                                    value={data.birthDate}
                                     className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                    onChange={(e) => setData('birth_date', e.target.value)}
+                                    onChange={(e) => setData('birthDate', e.target.value)}
                                 />
-                                <InputError message={errors.birth_date} className="mt-2" />
+                                <InputError message={errors.birthDate} className="mt-2" />
                             </div>
 
                             {/* Age (manual input) */}
                             <div className="col-span-12 sm:col-span-6">
-                                <InputLabel htmlFor="age" value="Age" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="userAge" value="userAge" className="text-gray-700 font-medium mb-2" />
                                 <TextInput
-                                    id="age"
+                                    id="userAge"
                                     type="number"
-                                    name="age"
+                                    name="userAge"
                                     value={data.age}
                                     className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                     placeholder="Enter your age"
                                     min="1"
                                     max="120"
-                                    onChange={(e) => setData('age', e.target.value)}
+                                    onChange={(e) => setData('userAge', e.target.value)}
                                 />
-                                <InputError message={errors.age} className="mt-2" />
+                                <InputError message={errors.userAge} className="mt-2" />
                             </div>
                         </div>
 
                         {/* Ethnicity */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="ethnicity" value="Ethnicity" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userEthnicity" value="userEthnicity" className="text-gray-700 font-medium mb-2" />
                             <select
-                                id="ethnicity"
-                                name="ethnicity"
+                                id="userEthnicity"
+                                name="userEthnicity"
                                 value={data.ethnicity}
-                                onChange={(e) => setData('ethnicity', e.target.value)}
+                                onChange={(e) => setData('userEthnicity', e.target.value)}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
                             >
                                 <option value="">Select ethnicity</option>
@@ -407,17 +423,17 @@ export default function Register() {
                                     <option key={option} value={option}>{option}</option>
                                 ))}
                             </select>
-                            <InputError message={errors.ethnicity} className="mt-2" />
+                            <InputError message={errors.userEthnicity} className="mt-2" />
                         </div>
 
                         {/* Province */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="province" value="Province" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userProvince" value="userProvince" className="text-gray-700 font-medium mb-2" />
                             <select
-                                id="province"
-                                name="province"
+                                id="userProvince"
+                                name="userProvince"
                                 value={data.province}
-                                onChange={(e) => setData('province', e.target.value)}
+                                onChange={(e) => setData('userProvince', e.target.value)}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
                             >
                                 <option value="">Select province</option>
@@ -430,12 +446,12 @@ export default function Register() {
 
                         {/* Municipality */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="municipality" value="Municipality" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userMunicipality" value="userMunicipality" className="text-gray-700 font-medium mb-2" />
                             <select
-                                id="municipality"
-                                name="municipality"
+                                id="userMunicipality"
+                                name="userMunicipality"
                                 value={data.municipality}
-                                onChange={(e) => setData('municipality', e.target.value)}
+                                onChange={(e) => setData('userMunicipality', e.target.value)}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
                             >
                                 <option value="">Select municipality</option>
@@ -443,17 +459,17 @@ export default function Register() {
                                     <option key={option} value={option}>{option}</option>
                                 ))}
                             </select>
-                            <InputError message={errors.municipality} className="mt-2" />
+                            <InputError message={errors.userMunicipality} className="mt-2" />
                         </div>
 
                         {/* Barangay */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="barangay" value="Barangay" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userBarangay" value="userBarangay" className="text-gray-700 font-medium mb-2" />
                             <select
-                                id="barangay"
-                                name="barangay"
+                                id="userBarangay"
+                                name="userBarangay"
                                 value={data.barangay}
-                                onChange={(e) => setData('barangay', e.target.value)}
+                                onChange={(e) => setData('userBarangay', e.target.value)}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
                             >
                                 <option value="">Select barangay</option>
@@ -461,22 +477,22 @@ export default function Register() {
                                     <option key={option} value={option}>{option}</option>
                                 ))}
                             </select>
-                            <InputError message={errors.barangay} className="mt-2" />
+                            <InputError message={errors.userBarangay} className="mt-2" />
                         </div>
 
                         {/* Purpose */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="purpose" value="Purpose" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userPurpose" value="userPurpose" className="text-gray-700 font-medium mb-2" />
                             <TextInput
-                                id="purpose"
+                                id="userPurpose"
                                 type="text"
-                                name="purpose"
+                                name="userPurpose"
                                 value={data.purpose}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                 placeholder="What is your purpose?"
-                                onChange={(e) => setData('purpose', e.target.value)}
+                                onChange={(e) => setData('userPurpose', e.target.value)}
                             />
-                            <InputError message={errors.purpose} className="mt-2" />
+                            <InputError message={errors.userPurpose} className="mt-2" />
                         </div>
 
                         {/* Terms Agreement */}
@@ -598,7 +614,7 @@ export default function Register() {
             </div>
 
             {/* Global styles to hide browser's password reveal */}
-            <style jsx>{`
+            <style>{`
                 input[type="password"]::-ms-reveal,
                 input[type="password"]::-ms-clear,
                 input[type="password"]::-webkit-textfield-decoration-container,

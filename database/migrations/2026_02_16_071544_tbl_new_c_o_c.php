@@ -12,35 +12,90 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('application_newCOC', function (Blueprint $table) {
-            $table->string('controlID', 50)->primary();
-            $table->string('userID', 50);
-            $table->string('userIPLeaderName', 255);
-            $table->string('userIPLeaderRegion', 100);
-            $table->string('userIPLeaderProvince', 100);
-            $table->string('userIPLeaderDistrict', 100);
-            $table->string('userIPLeaderMunicipality', 100);
-            $table->string('userIPLeaderBarangay', 100);
-            $table->string('userFatherName', 255);
-            $table->string('userFatherEthnicity', 100);
-            $table->string('userFatherOrigin', 255);
-            $table->string('userMotherName', 255);
-            $table->string('userMotherEthnicity', 100);
-            $table->string('userMotherOrigin', 255);
-            $table->string('userCMIDFileName', 255);
-            $table->string('userCMIDFilePath', 500);
-            $table->string('userPhotoFileName', 255);
-            $table->string('userPhotoFilePath', 500);
+            // Primary Identifiers
+            $table->string('controlID')->primary();
+            $table->string('controlNumber')->unique();
+            $table->string('trackerID')->unique();
+            $table->string('userID');
+            
+            // Applicant Information
+            $table->string('userIPLeaderName');
+            $table->string('userIPLeaderRegion')->nullable();
+            $table->string('userIPLeaderProvince')->nullable();
+            $table->string('userIPLeaderDistrict')->nullable();
+            $table->string('userIPLeaderMunicipality')->nullable();
+            $table->string('userIPLeaderBarangay')->nullable();
+            
+            // Family Information
+            $table->string('userFatherName')->nullable();
+            $table->string('userFatherEthnicity')->nullable();
+            $table->string('userFatherOrigin')->nullable();
+            $table->string('userMotherName')->nullable();
+            $table->string('userMotherEthnicity')->nullable();
+            $table->string('userMotherOrigin')->nullable();
+            
+            // Status & Tracking
+            $table->string('currentStatus')->default('draft');
+            $table->string('previousControlID')->nullable();
+            $table->string('applicationType')->default('new');
+            
+            // Review Fields
+            $table->string('reviewed_by')->nullable();
+            $table->timestamp('reviewed_at')->nullable();
+            $table->text('review_remarks')->nullable();
+            
+            // Approval Fields
+            $table->string('approved_by')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->string('certificate_number')->nullable()->unique();
+            
+            // Release Fields
+            $table->string('released_by')->nullable();
+            $table->string('released_to')->nullable();
+            $table->string('released_to_relationship')->nullable();
+            $table->timestamp('release_date')->nullable();
+            $table->timestamp('expected_return_date')->nullable();
+            $table->timestamp('actual_return_date')->nullable();
+            
+            // Timestamps
+            $table->timestamp('submitted_at')->nullable();
+            $table->timestamp('last_updated')->nullable();
             $table->timestamps();
             
-            // Index for faster queries
+            // Indexes
             $table->index('userID');
-            
-            // Foreign key constraint
+            $table->index('currentStatus');
+            $table->index('trackerID');
+            $table->index('certificate_number');
+            $table->index('created_at');
+        });
+        
+        // Add foreign keys after table is created
+        Schema::table('application_newCOC', function (Blueprint $table) {
             $table->foreign('userID')
                   ->references('userID')
                   ->on('login_users')
-                  ->onDelete('cascade')
-                  ->onUpdate('cascade');
+                  ->onDelete('cascade');
+                  
+            $table->foreign('previousControlID')
+                  ->references('controlID')
+                  ->on('application_newCOC')
+                  ->onDelete('set null');
+                  
+            $table->foreign('reviewed_by')
+                  ->references('userID')
+                  ->on('login_users')
+                  ->onDelete('set null');
+                  
+            $table->foreign('approved_by')
+                  ->references('userID')
+                  ->on('login_users')
+                  ->onDelete('set null');
+                  
+            $table->foreign('released_by')
+                  ->references('userID')
+                  ->on('login_users')
+                  ->onDelete('set null');
         });
     }
 

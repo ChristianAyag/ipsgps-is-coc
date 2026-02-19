@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserInformation;
 use App\Models\UserRole;
+use App\Models\UserRoleAudit; // Add this if you're using audit logging
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,9 +42,11 @@ class RegisteredUserController extends Controller
             'firstName' => 'required|string|max:255',
             'middleName' => 'nullable|string|max:255',
             'surName' => 'required|string|max:255',
+            'userSuffixName' => 'nullable|string|max:50', // ADDED: suffix name
             'userEmail' => 'required|string|lowercase|email|max:255|unique:login_users,userEmail',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'userPassword' => ['required', 'confirmed', Rules\Password::defaults()],
 
+            // User Information table fields
             'birthDate' => 'required|date',
             'userAge' => 'required|integer|min:1|max:150',
             'userEthnicity' => 'required|string|max:100',
@@ -74,6 +77,7 @@ class RegisteredUserController extends Controller
                 'firstName' => $request->firstName,
                 'middleName' => $request->middleName,
                 'surName' => $request->surName,
+                'userSuffixName' => $request->userSuffixName, // ADDED: suffix name
                 'userEmail' => $request->userEmail,
                 'userPassword' => Hash::make($request->password),
                 'userAccess' => $defaultRole ? $defaultRole->roleID : 'applicant',
@@ -110,6 +114,7 @@ class RegisteredUserController extends Controller
                         'firstName' => $user->firstName,
                         'middleName' => $user->middleName,
                         'surName' => $user->surName,
+                        'userSuffixName' => $user->userSuffixName, // ADDED: suffix name
                         'userEmail' => $user->userEmail,
                         'userAccess' => $user->userAccess,
                         'userOffice' => null, // Explicitly null for applicants
@@ -130,7 +135,7 @@ class RegisteredUserController extends Controller
 
             // Web request - log in and redirect to dashboard
             Auth::login($user);
-            return redirect(route('dashboard', absolute: false))->with('success', 'Registration completed successfully!');
+            return redirect(route('login', absolute: false))->with('success', 'Registration completed successfully!');
             
         } catch (\Exception $e) {
             DB::rollBack();
@@ -165,6 +170,7 @@ class RegisteredUserController extends Controller
             'firstName' => 'required|string|max:255',
             'middleName' => 'nullable|string|max:255',
             'surName' => 'required|string|max:255',
+            'userSuffixName' => 'nullable|string|max:50', // ADDED: suffix name
             'userEmail' => 'required|string|lowercase|email|max:255|unique:login_users,userEmail',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             // Office is required for non-applicant roles, optional/null for applicants
@@ -201,6 +207,7 @@ class RegisteredUserController extends Controller
                 'firstName' => $request->firstName,
                 'middleName' => $request->middleName,
                 'surName' => $request->surName,
+                'userSuffixName' => $request->userSuffixName, // ADDED: suffix name
                 'userEmail' => $request->userEmail,
                 'userPassword' => Hash::make($request->password),
                 'userAccess' => $request->userAccess,
@@ -225,6 +232,9 @@ class RegisteredUserController extends Controller
                 ]);
             }
 
+            // Log role change if needed
+            // UserRoleAudit::logChange(...);
+
             DB::commit();
 
             event(new Registered($user));
@@ -237,6 +247,7 @@ class RegisteredUserController extends Controller
                         'firstName' => $user->firstName,
                         'middleName' => $user->middleName,
                         'surName' => $user->surName,
+                        'userSuffixName' => $user->userSuffixName, // ADDED: suffix name
                         'userEmail' => $user->userEmail,
                         'userAccess' => $user->userAccess,
                         'userOffice' => $user->userOffice, // Will be null for applicants
@@ -291,6 +302,7 @@ class RegisteredUserController extends Controller
             'firstName' => 'sometimes|string|max:255',
             'middleName' => 'nullable|string|max:255',
             'surName' => 'sometimes|string|max:255',
+            'userSuffixName' => 'nullable|string|max:50', // ADDED: suffix name
             'userEmail' => ['sometimes', 'string', 'lowercase', 'email', 'max:255', Rule::unique('login_users', 'userEmail')->ignore($user->userID, 'userID')],
             'userOffice' => [
                 'nullable',
@@ -314,7 +326,7 @@ class RegisteredUserController extends Controller
             
             // Prepare update data
             $updateData = $request->only([
-                'firstName', 'middleName', 'surName', 'userEmail', 'is_active'
+                'firstName', 'middleName', 'surName', 'userSuffixName', 'userEmail', 'is_active' // ADDED: userSuffixName
             ]);
             
             // Add userAccess if provided
@@ -339,6 +351,11 @@ class RegisteredUserController extends Controller
             }
 
             $user->save();
+
+            // Log role change if applicable
+            if ($oldRole !== $user->userAccess) {
+                // UserRoleAudit::logChange(...);
+            }
 
             DB::commit();
 
@@ -398,6 +415,7 @@ class RegisteredUserController extends Controller
                     $q->where('firstName', 'like', "%{$search}%")
                       ->orWhere('middleName', 'like', "%{$search}%")
                       ->orWhere('surName', 'like', "%{$search}%")
+                      ->orWhere('userSuffixName', 'like', "%{$search}%") // ADDED: search in suffix
                       ->orWhere('userEmail', 'like', "%{$search}%")
                       ->orWhere('userID', 'like', "%{$search}%");
                 });
