@@ -35,7 +35,7 @@ return new class extends Migration
             $table->string('userMotherOrigin')->nullable();
             
             // Status & Tracking
-            $table->string('currentStatus')->default('draft');
+            $table->string('currentStatus')->default('pending');
             $table->string('previousControlID')->nullable();
             $table->string('applicationType')->default('new');
             
@@ -47,15 +47,12 @@ return new class extends Migration
             // Approval Fields
             $table->string('approved_by')->nullable();
             $table->timestamp('approved_at')->nullable();
-            $table->string('certificate_number')->nullable()->unique();
             
             // Release Fields
             $table->string('released_by')->nullable();
             $table->string('released_to')->nullable();
             $table->string('released_to_relationship')->nullable();
             $table->timestamp('release_date')->nullable();
-            $table->timestamp('expected_return_date')->nullable();
-            $table->timestamp('actual_return_date')->nullable();
             
             // Timestamps
             $table->timestamp('submitted_at')->nullable();
@@ -66,7 +63,6 @@ return new class extends Migration
             $table->index('userID');
             $table->index('currentStatus');
             $table->index('trackerID');
-            $table->index('certificate_number');
             $table->index('created_at');
         });
         

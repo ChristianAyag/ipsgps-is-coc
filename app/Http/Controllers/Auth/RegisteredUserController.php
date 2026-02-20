@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserInformation;
 use App\Models\UserRole;
-use App\Models\UserRoleAudit; // Add this if you're using audit logging
+use App\Models\UserRoleAudit;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
