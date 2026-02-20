@@ -10,14 +10,14 @@ export default function Login({ status, canResetPassword }) {
     const [showPassword, setShowPassword] = useState(false);
     
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        password: '',
+        userID: '', // Primary key field
+        userPassword: '', // Changed to match your model's field name,
         remember: false,
     });
 
     useEffect(() => {
         return () => {
-            reset('password');
+            reset('userPassword');
         };
     }, []);
 
@@ -81,36 +81,36 @@ export default function Login({ status, canResetPassword }) {
                             <form onSubmit={submit}>
                                 {/* Email Field */}
                                 <div className="mb-6">
-                                    <InputLabel htmlFor="email" value="Email" className="text-gray-700 font-medium mb-2" />
+                                    <InputLabel htmlFor="userID" value="User ID" className="text-gray-700 font-medium mb-2" />
                                     <div className="relative">
                                         <TextInput
-                                            id="email"
-                                            type="email"
-                                            name="email"
-                                            value={data.email}
+                                            id="userID"
+                                            type="text"
+                                            name="userID"
+                                            value={data.userID}
                                             className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                             placeholder="you@example.com"
                                             autoComplete="username"
                                             isFocused={true}
-                                            onChange={(e) => setData('email', e.target.value)}
+                                            onChange={(e) => setData('userID', e.target.value)}
                                         />
                                     </div>
-                                    <InputError message={errors.email} className="mt-2" />
+                                    <InputError message={errors.userID} className="mt-2" />
                                 </div>
 
                                 {/* Password Field */}
                                 <div className="mb-6">
-                                    <InputLabel htmlFor="password" value="Password" className="text-gray-700 font-medium mb-2" />
+                                    <InputLabel htmlFor="userPassword" value="Password" className="text-gray-700 font-medium mb-2" />
                                     <div className="relative">
                                         <input
-                                            id="password"
+                                            id="userPassword"
                                             type={showPassword ? "text" : "password"}
-                                            name="password"
+                                            name="userPassword"
                                             value={data.password}
                                             className="mt-1 block w-full px-4 pr-12 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                             placeholder="Enter your password"
                                             autoComplete="current-password"
-                                            onChange={(e) => setData('password', e.target.value)}
+                                            onChange={(e) => setData('userPassword', e.target.value)}
                                             onContextMenu={(e) => e.preventDefault()}
                                             onCopy={(e) => e.preventDefault()}
                                             onPaste={(e) => e.preventDefault()}
@@ -136,7 +136,7 @@ export default function Login({ status, canResetPassword }) {
                                             )}
                                         </button>
                                     </div>
-                                    <InputError message={errors.password} className="mt-2" />
+                                    <InputError message={errors.userPassword} className="mt-2" />
                                 </div>
 
                                 {/* Remember Me and Forgot Password */}

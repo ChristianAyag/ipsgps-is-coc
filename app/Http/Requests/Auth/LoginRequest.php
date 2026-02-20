@@ -6,8 +6,11 @@ use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class LoginRequest extends FormRequest
 {
@@ -27,8 +30,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'userID' => ['required', 'string'], // Changed from 'email' to 'userID'
-            'userPassword' => ['required', 'string'], // Changed from 'password' to 'userPassword'
+            'userID' => ['required', 'string'],
+            'userPassword' => ['required', 'string'],
         ];
     }
 
@@ -39,23 +42,84 @@ class LoginRequest extends FormRequest
      */
     public function authenticate(): void
     {
+        // Log the start of authentication
+        Log::info('=== LOGIN ATTEMPT START ===', [
+            'timestamp' => now()->toDateTimeString(),
+            'ip' => $this->ip(),
+            'user_agent' => $this->userAgent()
+        ]);
+
         $this->ensureIsNotRateLimited();
 
-        // Map the request fields to the database fields for authentication
-        $credentials = [
+        Log::info('Login form data received:', [
             'userID' => $this->userID,
-            'password' => $this->userPassword, // Laravel will look for 'password' field, but we're passing userPassword value
-        ];
+            'password_length' => strlen($this->userPassword),
+            'remember' => $this->boolean('remember')
+        ]);
 
-        // Note: Auth::attempt() expects the password field to be named 'password'
-        // Since your model uses 'userPassword', we need to tell Laravel to use that field
-        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
+        // Find the user
+        $user = User::where('userID', $this->userID)->first();
+        
+        if (!$user) {
+            Log::warning('User not found with userID:', ['userID' => $this->userID]);
             RateLimiter::hit($this->throttleKey());
-
             throw ValidationException::withMessages([
-                'userID' => trans('auth.failed'), // Changed from 'email' to 'userID'
+                'userID' => trans('auth.failed'),
             ]);
         }
+
+        Log::info('User found in database:', [
+            'userID' => $user->userID,
+            'name' => $user->firstName . ' ' . $user->surName,
+            'is_active' => $user->is_active,
+            'email' => $user->userEmail ?? 'no email'
+        ]);
+
+        // Check if user is active
+        if (!$user->is_active) {
+            Log::warning('Inactive user attempted login:', ['userID' => $this->userID]);
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages([
+                'userID' => 'Your account is deactivated. Please contact administrator.',
+            ]);
+        }
+
+        // MANUALLY VERIFY THE PASSWORD USING HASH::CHECK
+        Log::info('Attempting manual password verification...', [
+            'userID' => $this->userID,
+            'input_password_length' => strlen($this->userPassword),
+            'stored_hash_length' => strlen($user->userPassword),
+            'stored_hash_prefix' => substr($user->userPassword, 0, 10) . '...'
+        ]);
+
+        if (!Hash::check($this->userPassword, $user->userPassword)) {
+            Log::warning('Manual password verification FAILED', [
+                'userID' => $this->userID,
+                'input_password' => $this->userPassword,
+                'stored_hash' => $user->userPassword,
+            ]);
+            
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages([
+                'userID' => trans('auth.failed'),
+            ]);
+        }
+
+        Log::info('Manual password verification SUCCESSFUL', [
+            'userID' => $this->userID
+        ]);
+
+        // If manual verification works, log the user in manually
+        Auth::login($user, $this->boolean('remember'));
+
+        // Update last login timestamp (optional)
+        $user->update(['last_login' => now()]);
+
+        Log::info('=== LOGIN SUCCESSFUL (Manual) ===', [
+            'userID' => $this->userID,
+            'timestamp' => now()->toDateTimeString(),
+            'remember' => $this->boolean('remember')
+        ]);
 
         RateLimiter::clear($this->throttleKey());
     }
@@ -67,16 +131,32 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+        $attempts = RateLimiter::attempts($this->throttleKey());
+        $availableIn = RateLimiter::availableIn($this->throttleKey());
+        
+        Log::info('Rate limit check:', [
+            'throttle_key' => $this->throttleKey(),
+            'attempts' => $attempts,
+            'max_attempts' => 5,
+            'available_in' => $availableIn . ' seconds'
+        ]);
+
+        if (!RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+            Log::info('Rate limit check passed');
             return;
         }
+
+        Log::warning('Rate limit exceeded', [
+            'throttle_key' => $this->throttleKey(),
+            'attempts' => $attempts
+        ]);
 
         event(new Lockout($this));
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'userID' => trans('auth.throttle', [ // Changed from 'email' to 'userID'
+            'userID' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -88,6 +168,10 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('userID')).'|'.$this->ip()); // Changed from 'email' to 'userID'
+        $key = Str::transliterate(Str::lower($this->string('userID')).'|'.$this->ip());
+        
+        Log::debug('Generated throttle key:', ['key' => $key]);
+        
+        return $key;
     }
 }

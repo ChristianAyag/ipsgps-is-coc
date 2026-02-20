@@ -10,6 +10,7 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+
 // Optional: If you want to keep a separate welcome page
 Route::get('/welcome', function () {
     return Inertia::render('Welcome', [
@@ -22,9 +23,13 @@ Route::get('/welcome', function () {
 
 // PUBLIC DASHBOARD - No authentication required
 // Anyone can access by typing the URL
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->name('dashboard');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return Inertia::render('Dashboard');
+    })->name('dashboard');
+    
+    // Other authenticated routes here
+});
 
 // User Dashboard - Public access (no login required)
 Route::get('/user/dashboard', function () {
