@@ -79,7 +79,7 @@ class RegisteredUserController extends Controller
                 'surName' => $request->surName,
                 'userSuffixName' => $request->userSuffixName, // ADDED: suffix name
                 'userEmail' => $request->userEmail,
-                'userPassword' => Hash::make($request->password),
+                'userPassword' => Hash::make($request->userPassword),
                 'userAccess' => $defaultRole ? $defaultRole->roleID : 'applicant',
                 'userOffice' => null, // Always null for applicants
                 'is_active' => true,
