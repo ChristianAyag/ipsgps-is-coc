@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 
 export default function AdminDashboard() {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
 
     // Sample admin user data
@@ -69,72 +68,38 @@ export default function AdminDashboard() {
             <Head title="Admin Dashboard" />
             
             <div className="min-h-screen flex bg-gradient-to-br from-gray-50 to-gray-100">
-                {/* Sidebar */}
-                <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-lg transition-all duration-300 flex flex-col`}>
+                {/* Sidebar - Fixed width, no collapsing */}
+                <div className="w-64 bg-white shadow-lg flex flex-col">
                     {/* Logo */}
                     <div className="h-20 flex items-center justify-center border-b border-gray-200">
-                        <span className={`text-2xl font-bold text-gray-800 ${!isSidebarOpen && 'text-xl'}`}>
-                            {isSidebarOpen ? 'AdminPanel' : 'AP'}
+                        <span className="text-2xl font-bold text-gray-800">
+                            AdminPanel
                         </span>
                     </div>
 
-                    {/* Sidebar Toggle */}
-                    <button
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="absolute left-64 top-20 -translate-x-1/2 bg-white rounded-full p-1.5 shadow-md hover:shadow-lg transition-all border border-gray-300"
-                        style={{ left: isSidebarOpen ? '16rem' : '5rem' }}
-                    >
-                        <span className="text-gray-700">
-                            {isSidebarOpen ? '◀' : '▶'}
-                        </span>
-                    </button>
-
-                    {/* Navigation */}
+                    {/* Navigation - Icons removed */}
                     <nav className="flex-1 px-3 py-6">
                         <div className="space-y-1">
-                            <NavItem icon="📊" text="Overview" active={activeTab === 'overview'} isOpen={isSidebarOpen} onClick={() => setActiveTab('overview')} />
-                            <NavItem icon="👥" text="Users" active={activeTab === 'users'} isOpen={isSidebarOpen} onClick={() => setActiveTab('users')} />
-                            <NavItem icon="📁" text="Projects" active={activeTab === 'projects'} isOpen={isSidebarOpen} onClick={() => setActiveTab('projects')} />
-                            <NavItem icon="💰" text="Revenue" active={activeTab === 'revenue'} isOpen={isSidebarOpen} onClick={() => setActiveTab('revenue')} />
-                            <NavItem icon="⚙️" text="Settings" active={activeTab === 'settings'} isOpen={isSidebarOpen} onClick={() => setActiveTab('settings')} />
-                            <NavItem icon="🔒" text="Security" active={activeTab === 'security'} isOpen={isSidebarOpen} onClick={() => setActiveTab('security')} />
-                            <NavItem icon="📊" text="Reports" active={activeTab === 'reports'} isOpen={isSidebarOpen} onClick={() => setActiveTab('reports')} />
+                            <NavItem text="Overview" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
+                            <NavItem text="Users" active={activeTab === 'users'} onClick={() => setActiveTab('users')} />
+                            <NavItem text="Projects" active={activeTab === 'projects'} onClick={() => setActiveTab('projects')} />
+                            <NavItem text="Revenue" active={activeTab === 'revenue'} onClick={() => setActiveTab('revenue')} />
+                            <NavItem text="Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+                            <NavItem text="Security" active={activeTab === 'security'} onClick={() => setActiveTab('security')} />
+                            <NavItem text="Reports" active={activeTab === 'reports'} onClick={() => setActiveTab('reports')} />
                         </div>
                     </nav>
 
-                    {/* Admin Profile */}
-                    <div className="border-t border-gray-200 p-4">
-                        <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-r from-gray-700 to-gray-600 rounded-full flex items-center justify-center text-white text-xl">
-                                {admin.avatar}
-                            </div>
-                            {isSidebarOpen && (
-                                <div className="flex-1">
-                                    <p className="text-sm font-semibold text-gray-900">{admin.name}</p>
-                                    <p className="text-xs text-gray-600">{admin.role}</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
                 </div>
 
                 {/* Main Content */}
                 <div className="flex-1 overflow-auto">
-                    {/* Top Navigation */}
+                    {/* Top Navigation - Search bar removed */}
                     <nav className="bg-white shadow-sm border-b border-gray-200">
                         <div className="px-6 py-4">
                             <div className="flex justify-between items-center">
-                                {/* Search Bar */}
-                                <div className="flex-1 max-w-lg">
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-3 text-gray-500">🔍</span>
-                                        <input
-                                            type="text"
-                                            placeholder="Search users, projects, or settings..."
-                                            className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-xl focus:border-gray-500 focus:ring-1 focus:ring-gray-500 transition-all text-gray-900 placeholder-gray-500"
-                                        />
-                                    </div>
-                                </div>
+                                {/* Empty div to maintain spacing */}
+                                <div className="flex-1"></div>
 
                                 {/* Right Navigation */}
                                 <div className="flex items-center space-x-4">
@@ -352,23 +317,6 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Quick Admin Actions */}
-                        <div className="mt-6">
-                            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                                <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Admin Actions</h2>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <QuickActionButton icon="👥" text="Add User" />
-                                    <QuickActionButton icon="📊" text="Generate Report" />
-                                    <QuickActionButton icon="⚙️" text="System Settings" />
-                                    <QuickActionButton icon="💰" text="View Payments" />
-                                    <QuickActionButton icon="🔒" text="Security Scan" />
-                                    <QuickActionButton icon="📧" text="Send Newsletter" />
-                                    <QuickActionButton icon="🗑️" text="Cleanup" />
-                                    <QuickActionButton icon="📈" text="Analytics" />
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -376,19 +324,18 @@ export default function AdminDashboard() {
     );
 }
 
-// Sidebar Navigation Item Component
-function NavItem({ icon, text, active, isOpen, onClick }) {
+// Sidebar Navigation Item Component - Updated without icon
+function NavItem({ text, active, onClick }) {
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all ${
+            className={`w-full text-left px-3 py-2.5 rounded-lg transition-all ${
                 active 
                     ? 'bg-gray-800 text-white font-medium shadow-md' 
                     : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 font-medium'
             }`}
         >
-            <span className="text-xl">{icon}</span>
-            {isOpen && <span className="font-medium">{text}</span>}
+            <span className="font-medium">{text}</span>
         </button>
     );
 }
