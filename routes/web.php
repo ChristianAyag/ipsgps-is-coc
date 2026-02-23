@@ -24,17 +24,19 @@ Route::get('/welcome', function () {
 // PUBLIC DASHBOARD - No authentication required
 // Anyone can access by typing the URL
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/user/dashboard', function () {
+        return Inertia::render('User/User_Dashboard');
+    })->name('user.dashboard');
     
     // Other authenticated routes here
 });
 
+/*
 // User Dashboard - Public access (no login required)
 Route::get('/user/dashboard', function () {
     return Inertia::render('User/User_Dashboard');
 })->name('user.dashboard');
+*/
 
 // Admin Dashboard - Public access (no login required)
 Route::get('/admin/dashboard', function () {
