@@ -23,11 +23,10 @@ Route::get('/welcome', function () {
 
 // PUBLIC DASHBOARD - No authentication required
 // Anyone can access by typing the URL
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['verified','auth'])->group(function () {
     Route::get('/user/dashboard', function () {
         return Inertia::render('User/User_Dashboard');
     })->name('user.dashboard');
-    
     // Other authenticated routes here
 });
 
