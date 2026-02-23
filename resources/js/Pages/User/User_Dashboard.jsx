@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 
 export default function Dashboard() {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
 
     // Sample user data
@@ -47,39 +46,66 @@ export default function Dashboard() {
             <Head title="Dashboard" />
             
             <div className="min-h-screen flex bg-gradient-to-br from-blue-50 to-indigo-100">
-                {/* Sidebar */}
-                <div className={`${isSidebarOpen ? 'w-64' : 'w-20'} bg-white/80 backdrop-blur-sm shadow-lg transition-all duration-300 flex flex-col`}>
+                {/* Sidebar - Fixed width, no collapsing */}
+                <div className="w-64 bg-white/80 backdrop-blur-sm shadow-lg flex flex-col">
                     {/* Logo */}
                     <div className="h-20 flex items-center justify-center border-b border-gray-200">
-                        <span className={`text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent ${!isSidebarOpen && 'text-xl'}`}>
-                            {isSidebarOpen ? 'YourApp' : 'YA'}
+                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                            YourApp
                         </span>
                     </div>
 
-                    {/* Sidebar Toggle */}
-                    <button
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        className="absolute left-64 top-20 -translate-x-1/2 bg-white rounded-full p-1.5 shadow-md hover:shadow-lg transition-all"
-                        style={{ left: isSidebarOpen ? '16rem' : '5rem' }}
-                    >
-                        <span className="text-gray-600">
-                            {isSidebarOpen ? '◀' : '▶'}
-                        </span>
-                    </button>
-
-                    {/* Navigation - Removed user profile section */}
+                    {/* Navigation */}
                     <nav className="flex-1 px-3 py-6">
                         <div className="space-y-2">
-                            <NavItem icon="📊" text="Dashboard" active={activeTab === 'overview'} isOpen={isSidebarOpen} onClick={() => setActiveTab('overview')} />
-                            <NavItem icon="📁" text="Projects" active={activeTab === 'projects'} isOpen={isSidebarOpen} onClick={() => setActiveTab('projects')} />
-                            <NavItem icon="✅" text="Tasks" active={activeTab === 'tasks'} isOpen={isSidebarOpen} onClick={() => setActiveTab('tasks')} />
-                            <NavItem icon="👥" text="Team" active={activeTab === 'team'} isOpen={isSidebarOpen} onClick={() => setActiveTab('team')} />
-                            <NavItem icon="📅" text="Calendar" active={activeTab === 'calendar'} isOpen={isSidebarOpen} onClick={() => setActiveTab('calendar')} />
-                            <NavItem icon="⚙️" text="Settings" active={activeTab === 'settings'} isOpen={isSidebarOpen} onClick={() => setActiveTab('settings')} />
+                            <NavItem 
+                                text="Home" 
+                                active={activeTab === 'home'} 
+                                onClick={() => setActiveTab('home')} 
+                            />
+                            
+                            <NavItem 
+                                text="COC Application Process" 
+                                active={activeTab === 'coc-application'} 
+                                onClick={() => setActiveTab('coc-application')} 
+                            />
+                            <NavItem 
+                                text="Application Status" 
+                                active={activeTab === 'application-status'} 
+                                onClick={() => setActiveTab('application-status')} 
+                            />
+                            <NavItem 
+                                text="Issued COC" 
+                                active={activeTab === 'issued-coc'} 
+                                onClick={() => setActiveTab('issued-coc')} 
+                            />
+                            
+                            <NavItem 
+                                text="IP Groups" 
+                                active={activeTab === 'ip-groups'} 
+                                onClick={() => setActiveTab('ip-groups')} 
+                            />
+                            
+                            <NavItem 
+                                text="FAQs" 
+                                active={activeTab === 'faqs'} 
+                                onClick={() => setActiveTab('faqs')} 
+                            />
+                            <NavItem 
+                                text="Downloadable Forms & Requirements" 
+                                active={activeTab === 'downloadable-forms'} 
+                                onClick={() => setActiveTab('downloadable-forms')} 
+                            />
+                            
+                            <NavItem 
+                                text="NCIP Admin Order No. 2" 
+                                active={activeTab === 'ncip-admin-order'} 
+                                onClick={() => setActiveTab('ncip-admin-order')} 
+                            />
                         </div>
                     </nav>
 
-                    {/* Empty div to maintain spacing - no profile */}
+                    {/* Empty div to maintain spacing */}
                     <div className="h-4"></div>
                 </div>
 
@@ -89,17 +115,8 @@ export default function Dashboard() {
                     <nav className="bg-white/80 backdrop-blur-sm shadow-sm">
                         <div className="px-6 py-4">
                             <div className="flex justify-between items-center">
-                                {/* Search Bar */}
-                                <div className="flex-1 max-w-lg">
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-3 text-gray-400">🔍</span>
-                                        <input
-                                            type="text"
-                                            placeholder="Search projects, tasks, or team members..."
-                                            className="w-full pl-12 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
-                                        />
-                                    </div>
-                                </div>
+                                {/* Empty div to maintain spacing when search is removed */}
+                                <div className="flex-1"></div>
 
                                 {/* Right Navigation */}
                                 <div className="flex items-center space-x-4">
@@ -253,8 +270,8 @@ export default function Dashboard() {
     );
 }
 
-// Sidebar Navigation Item Component
-function NavItem({ icon, text, active, isOpen, onClick }) {
+// Sidebar Navigation Item Component - Updated to always show text
+function NavItem({ icon, text, active, onClick }) {
     return (
         <button
             onClick={onClick}
@@ -265,7 +282,7 @@ function NavItem({ icon, text, active, isOpen, onClick }) {
             }`}
         >
             <span className="text-xl">{icon}</span>
-            {isOpen && <span className="font-medium">{text}</span>}
+            <span className="font-medium">{text}</span>
         </button>
     );
 }
