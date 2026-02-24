@@ -73,14 +73,16 @@ class User extends Authenticatable Implements MustVerifyEmail
      *
      * @var array<string, string>
      */
-    protected $casts = [
-        'userPassword' => 'hashed',
-        'last_login' => 'datetime',
-        'is_active' => 'boolean',
-        'email_verified_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
+    protected function casts(): array{
+    return [    
+            'userPassword' => 'hashed',
+            'last_login' => 'datetime',
+            'is_active' => 'boolean',
+            'email_verified_at' => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
 
     /**
      * The model's default values for attributes.
@@ -90,13 +92,6 @@ class User extends Authenticatable Implements MustVerifyEmail
     protected $attributes = [
         'is_active' => true,
     ];
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
 
     /**
      * Get the user role associated with the user.
@@ -311,7 +306,9 @@ class User extends Authenticatable Implements MustVerifyEmail
     {
         return $this->userEmail;
     }
-
+    public function routeNotificationForMail($notification = null){
+        return $this -> userEmail;
+    }
     /**
      * Get the name of the unique identifier for the user.
      */
