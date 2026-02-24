@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 // Make login the landing page
@@ -23,20 +25,13 @@ Route::get('/welcome', function () {
 
 // PUBLIC DASHBOARD - No authentication required
 // Anyone can access by typing the URL
-/*
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth','verified'])->group(function () {
     Route::get('/user/dashboard', function () {
         return Inertia::render('User/User_Dashboard');
     })->name('user.dashboard');
-    
     // Other authenticated routes here
 });
 */
-
-// User Dashboard - Public access (no login required)
-Route::get('/user/dashboard', function () {
-    return Inertia::render('User/User_Dashboard');
-})->name('user.dashboard');
 
 // Admin Dashboard - Public access (no login required)
 Route::get('/admin/dashboard', function () {
