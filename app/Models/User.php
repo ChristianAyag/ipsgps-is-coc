@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable Implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -73,14 +73,16 @@ class User extends Authenticatable
      *
      * @var array<string, string>
      */
-    protected $casts = [
-        'userPassword' => 'hashed',
-        'last_login' => 'datetime',
-        'is_active' => 'boolean',
-        'email_verified_at' => 'datetime',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
+    protected function casts(): array{
+    return [    
+            'userPassword' => 'hashed',
+            'last_login' => 'datetime',
+            'is_active' => 'boolean',
+            'email_verified_at' => 'datetime',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
+    }
 
     /**
      * The model's default values for attributes.
@@ -304,7 +306,9 @@ class User extends Authenticatable
     {
         return $this->userEmail;
     }
-
+    public function routeNotificationForMail($notification = null){
+        return $this -> userEmail;
+    }
     /**
      * Get the name of the unique identifier for the user.
      */
@@ -327,5 +331,38 @@ class User extends Authenticatable
     public function getEmailForPasswordReset()
     {
         return $this->userEmail;
+    }
+    /**
+     * Get the unique identifier for the user.
+     *
+     * @return mixed
+     */
+    public function getAuthIdentifier()
+    {
+        return $this->userID;
+    }
+
+    /**
+     * Get the remember token.
+     */
+    public function getRememberToken()
+    {
+        return $this->remember_token;
+    }
+
+    /**
+     * Set the remember token.
+     */
+    public function setRememberToken($value)
+    {
+        $this->remember_token = $value;
+    }
+
+    /**
+     * Get the remember token name.
+     */
+    public function getRememberTokenName()
+    {
+        return 'remember_token';
     }
 }
