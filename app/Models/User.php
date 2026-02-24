@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable;
 
@@ -90,6 +90,13 @@ class User extends Authenticatable
     protected $attributes = [
         'is_active' => true,
     ];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
     /**
      * Get the user role associated with the user.
@@ -327,5 +334,38 @@ class User extends Authenticatable
     public function getEmailForPasswordReset()
     {
         return $this->userEmail;
+    }
+    /**
+     * Get the unique identifier for the user.
+     *
+     * @return mixed
+     */
+    public function getAuthIdentifier()
+    {
+        return $this->userID;
+    }
+
+    /**
+     * Get the remember token.
+     */
+    public function getRememberToken()
+    {
+        return $this->remember_token;
+    }
+
+    /**
+     * Set the remember token.
+     */
+    public function setRememberToken($value)
+    {
+        $this->remember_token = $value;
+    }
+
+    /**
+     * Get the remember token name.
+     */
+    public function getRememberTokenName()
+    {
+        return 'remember_token';
     }
 }

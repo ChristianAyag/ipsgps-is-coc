@@ -135,7 +135,7 @@ class RegisteredUserController extends Controller
 
             // Web request - log in and redirect to dashboard
             Auth::login($user);
-            return redirect()->route('verification.notice')->with('success', 'Registration completed successfully!');
+            return redirect(route('user.dashboard', absolute: false));
             
         } catch (\Exception $e) {
             DB::rollBack();
