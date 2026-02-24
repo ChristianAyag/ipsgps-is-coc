@@ -31,7 +31,7 @@ Route::middleware(['auth','verified'])->group(function () {
     })->name('user.dashboard');
     // Other authenticated routes here
 });
-*/
+
 
 // Admin Dashboard - Public access (no login required)
 Route::get('/admin/dashboard', function () {

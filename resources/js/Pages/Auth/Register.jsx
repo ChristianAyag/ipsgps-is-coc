@@ -35,20 +35,8 @@ export default function Register() {
     });
 
     // Options for combo boxes
-    const ethnicityOptions = [
-        'Tagalog',
-        'Cebuano',
-        'Ilocano',
-        'Bicolano',
-        'Hiligaynon',
-        'Waray',
-        'Kapampangan',
-        'Pangasinense',
-        'Maranao',
-        'Maguindanao',
-        'Tausug',
-        'Other'
-    ];
+    const [ethnicityOptions, setEthnicityOptions] = useState([]);
+    const [loadingEthnicities, setLoadingEthnicities] = useState(false);
 
     const provinceOptions = [
         'Metro Manila',
@@ -106,6 +94,48 @@ export default function Register() {
         };
     }, []);
 
+    // Fixed useEffect for fetching ethnogroups
+    useEffect(() => {
+        const fetchEthnoGroups = async () => {
+            setLoadingEthnicities(true);
+            try {
+                const res = await fetch(import.meta.env.VITE_NCIP_DRIP_API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'X-API-KEY': import.meta.env.VITE_NCIP_DRIP_API_KEY, // Changed from Authorization to X-API-KEY
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
+                const json = await res.json();
+                
+                // Handle different API response structures using ternary operators
+                const options = Array.isArray(json) 
+                    ? json 
+                    : (json.data && Array.isArray(json.data))
+                        ? json.data
+                        : (json.ethnogroups && Array.isArray(json.ethnogroups))
+                            ? json.ethnogroups
+                            : (json.records && Array.isArray(json.records))
+                                ? json.records
+                                : [];
+
+                setEthnicityOptions(options);
+            } catch (err) {
+                console.error('Failed to fetch ethno groups:', err);
+                setEthnicityOptions([]); // Set empty array on error
+            } finally {
+                setLoadingEthnicities(false);
+            }
+        };
+
+        fetchEthnoGroups();
+    }, []);
+
     const handleNextStep = (e) => {
         e.preventDefault();
         setRegistrationStep(2);
@@ -133,6 +163,33 @@ export default function Register() {
     const toggleConfirmPassword = (e) => {
         e.preventDefault();
         setShowConfirmPassword(!showConfirmPassword);
+    };
+
+    // Helper function to get ethnicity value and label
+    const getEthnicityOption = (option, index) => {
+        const value = typeof option === 'string' 
+            ? option 
+            : (option.name 
+                ? option.name 
+                : (option.ethnicity 
+                    ? option.ethnicity 
+                    : (option.value 
+                        ? option.value 
+                        : JSON.stringify(option))));
+        
+        const label = typeof option === 'string' 
+            ? option 
+            : (option.name 
+                ? option.name 
+                : (option.ethnicity 
+                    ? option.ethnicity 
+                    : (option.label 
+                        ? option.label 
+                        : (option.value 
+                            ? option.value 
+                            : 'Unknown'))));
+        
+        return { value, label, key: index };
     };
 
     // Render registration steps
@@ -247,7 +304,7 @@ export default function Register() {
                         {/* Password Field */}
                         <div className="mb-6">
                             <div className="w-full sm:w-3/4">
-                                <InputLabel htmlFor="userPassword" value="userPassword" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="userPassword" value="Password" className="text-gray-700 font-medium mb-2" />
                                 <div className="relative">
                                     <input
                                         id="userPassword"
@@ -378,7 +435,7 @@ export default function Register() {
                         <div className="grid grid-cols-12 gap-4 mb-6">
                             {/* Birth Date */}
                             <div className="col-span-12 sm:col-span-6">
-                                <InputLabel htmlFor="birthDate" value="birthDate" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="birthDate" value="Birth Date" className="text-gray-700 font-medium mb-2" />
                                 <TextInput
                                     id="birthDate"
                                     type="date"
@@ -392,12 +449,12 @@ export default function Register() {
 
                             {/* Age (manual input) */}
                             <div className="col-span-12 sm:col-span-6">
-                                <InputLabel htmlFor="userAge" value="userAge" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="userAge" value="Age" className="text-gray-700 font-medium mb-2" />
                                 <TextInput
                                     id="userAge"
                                     type="number"
                                     name="userAge"
-                                    value={data.age}
+                                    value={data.userAge}
                                     className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                     placeholder="Enter your age"
                                     min="1"
@@ -410,29 +467,37 @@ export default function Register() {
 
                         {/* Ethnicity */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userEthnicity" value="userEthnicity" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userEthnicity" value="Ethnicity" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userEthnicity"
                                 name="userEthnicity"
-                                value={data.ethnicity}
+                                value={data.userEthnicity}
                                 onChange={(e) => setData('userEthnicity', e.target.value)}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
+                                disabled={loadingEthnicities}
                             >
-                                <option value="">Select ethnicity</option>
-                                {ethnicityOptions.map((option) => (
-                                    <option key={option} value={option}>{option}</option>
-                                ))}
+                                <option value="">
+                                    {loadingEthnicities ? 'Loading ethnicities...' : 'Select ethnicity'}
+                                </option>
+                                {ethnicityOptions.map((option, index) => {
+                                    const { value, label, key } = getEthnicityOption(option, index);
+                                    return (
+                                        <option key={key} value={value}>
+                                            {label}
+                                        </option>
+                                    );
+                                })}
                             </select>
                             <InputError message={errors.userEthnicity} className="mt-2" />
                         </div>
 
                         {/* Province */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userProvince" value="userProvince" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userProvince" value="Province" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userProvince"
                                 name="userProvince"
-                                value={data.province}
+                                value={data.userProvince}
                                 onChange={(e) => setData('userProvince', e.target.value)}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
                             >
@@ -441,16 +506,16 @@ export default function Register() {
                                     <option key={option} value={option}>{option}</option>
                                 ))}
                             </select>
-                            <InputError message={errors.province} className="mt-2" />
+                            <InputError message={errors.userProvince} className="mt-2" />
                         </div>
 
                         {/* Municipality */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userMunicipality" value="userMunicipality" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userMunicipality" value="Municipality" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userMunicipality"
                                 name="userMunicipality"
-                                value={data.municipality}
+                                value={data.userMunicipality}
                                 onChange={(e) => setData('userMunicipality', e.target.value)}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
                             >
@@ -464,11 +529,11 @@ export default function Register() {
 
                         {/* Barangay */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userBarangay" value="userBarangay" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userBarangay" value="Barangay" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userBarangay"
                                 name="userBarangay"
-                                value={data.barangay}
+                                value={data.userBarangay}
                                 onChange={(e) => setData('userBarangay', e.target.value)}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
                             >
@@ -482,12 +547,12 @@ export default function Register() {
 
                         {/* Purpose */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userPurpose" value="userPurpose" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userPurpose" value="Purpose" className="text-gray-700 font-medium mb-2" />
                             <TextInput
                                 id="userPurpose"
                                 type="text"
                                 name="userPurpose"
-                                value={data.purpose}
+                                value={data.userPurpose}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                 placeholder="What is your purpose?"
                                 onChange={(e) => setData('userPurpose', e.target.value)}
