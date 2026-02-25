@@ -16,7 +16,7 @@ export default function Register() {
         firstName: '', // Changed from first_name to firstName
         middleName: '', // Changed from middle_name to middleName
         surName: '', // Changed from last_name to surName
-        suffix: '',
+        userSuffixName: '',
         userEmail: '', // Changed from email to userEmail
         userPassword: '', // Changed from password to userPassword
         userPassword_confirmation: '', // Changed from password_confirmation to userPassword_confirmation
