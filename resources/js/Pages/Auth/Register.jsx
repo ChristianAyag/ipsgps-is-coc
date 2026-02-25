@@ -247,7 +247,7 @@ export default function Register() {
                         {/* Password Field */}
                         <div className="mb-6">
                             <div className="w-full sm:w-3/4">
-                                <InputLabel htmlFor="userPassword" value="userPassword" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="userPassword" value="Password" className="text-gray-700 font-medium mb-2" />
                                 <div className="relative">
                                     <input
                                         id="userPassword"
@@ -378,7 +378,7 @@ export default function Register() {
                         <div className="grid grid-cols-12 gap-4 mb-6">
                             {/* Birth Date */}
                             <div className="col-span-12 sm:col-span-6">
-                                <InputLabel htmlFor="birthDate" value="birthDate" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="birthDate" value="Birth Date" className="text-gray-700 font-medium mb-2" />
                                 <TextInput
                                     id="birthDate"
                                     type="date"
@@ -392,7 +392,7 @@ export default function Register() {
 
                             {/* Age (manual input) */}
                             <div className="col-span-12 sm:col-span-6">
-                                <InputLabel htmlFor="userAge" value="userAge" className="text-gray-700 font-medium mb-2" />
+                                <InputLabel htmlFor="userAge" value="Age" className="text-gray-700 font-medium mb-2" />
                                 <TextInput
                                     id="userAge"
                                     type="number"
@@ -410,7 +410,7 @@ export default function Register() {
 
                         {/* Ethnicity */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userEthnicity" value="userEthnicity" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userEthnicity" value="Ethnicity" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userEthnicity"
                                 name="userEthnicity"
@@ -428,7 +428,7 @@ export default function Register() {
 
                         {/* Province */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userProvince" value="userProvince" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userProvince" value="Province" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userProvince"
                                 name="userProvince"
@@ -446,7 +446,7 @@ export default function Register() {
 
                         {/* Municipality */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userMunicipality" value="userMunicipality" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userMunicipality" value="Municipality" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userMunicipality"
                                 name="userMunicipality"
@@ -464,7 +464,7 @@ export default function Register() {
 
                         {/* Barangay */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userBarangay" value="userBarangay" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userBarangay" value="Barangay" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userBarangay"
                                 name="userBarangay"
@@ -482,7 +482,7 @@ export default function Register() {
 
                         {/* Purpose */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userPurpose" value="userPurpose" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userPurpose" value="Purpose" className="text-gray-700 font-medium mb-2" />
                             <TextInput
                                 id="userPurpose"
                                 type="text"
