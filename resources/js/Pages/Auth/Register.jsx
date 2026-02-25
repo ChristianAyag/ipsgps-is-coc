@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -10,7 +10,20 @@ export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [registrationStep, setRegistrationStep] = useState(1);
-    
+
+    // PSGC API state
+    const [provinces, setProvinces] = useState([]);
+    const [municipalities, setMunicipalities] = useState([]);
+    const [barangays, setBarangays] = useState([]);
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingMunicipalities, setLoadingMunicipalities] = useState(false);
+    const [loadingBarangays, setLoadingBarangays] = useState(false);
+    const [selectedProvinceCode, setSelectedProvinceCode] = useState('');
+    const [selectedMunicipalityCode, setSelectedMunicipalityCode] = useState('');
+
+    const municipalitiesCacheRef = useRef({});
+    const barangaysCacheRef = useRef({});
+
     const { data, setData, post, processing, errors, reset } = useForm({
         // Step 1 fields - Updated to match database schema (userID removed - auto-generated)
         firstName: '', // Changed from first_name to firstName
@@ -50,61 +63,131 @@ export default function Register() {
         'Other'
     ];
 
-    const provinceOptions = [
-        'Metro Manila',
-        'Bulacan',
-        'Cavite',
-        'Laguna',
-        'Rizal',
-        'Pampanga',
-        'Batangas',
-        'Quezon',
-        'Nueva Ecija',
-        'Tarlac',
-        'Cebu',
-        'Davao del Sur',
-        'Other'
-    ];
+    // Fetch provinces on mount
+    useEffect(() => {
+        setLoadingProvinces(true);
+        fetch('https://psgc.gitlab.io/api/provinces/')
+            .then((res) => res.json())
+            .then((data) => {
+                const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
+                setProvinces(sorted);
+            })
+            .catch((err) => console.error('Failed to fetch provinces:', err))
+            .finally(() => setLoadingProvinces(false));
+    }, []);
 
-    const municipalityOptions = [
-        'Manila',
-        'Quezon City',
-        'Caloocan',
-        'Makati',
-        'Taguig',
-        'Pasig',
-        'Mandaluyong',
-        'San Juan',
-        'Marikina',
-        'Pasay',
-        'Paranaque',
-        'Las Pinas',
-        'Muntinlupa',
-        'Valenzuela',
-        'Malabon',
-        'Navotas',
-        'Other'
-    ];
+    // Fetch municipalities when province changes (with caching)
+    useEffect(() => {
+        if (!selectedProvinceCode) {
+            setMunicipalities([]);
+            setBarangays([]);
+            setSelectedMunicipalityCode('');
+            setData((prev) => ({ ...prev, userMunicipality: '', userBarangay: '' }));
+            return;
+        }
 
-    const barangayOptions = [
-        'Barangay 1',
-        'Barangay 2',
-        'Barangay 3',
-        'Barangay 4',
-        'Barangay 5',
-        'Barangay 6',
-        'Barangay 7',
-        'Barangay 8',
-        'Barangay 9',
-        'Barangay 10',
-        'Other'
-    ];
+        setLoadingMunicipalities(true);
+        setMunicipalities([]);
+        setBarangays([]);
+        setSelectedMunicipalityCode('');
+        setData((prev) => ({ ...prev, userMunicipality: '', userBarangay: '' }));
+
+        const cachedMunicipalities = municipalitiesCacheRef.current[selectedProvinceCode];
+        if (cachedMunicipalities) {
+            setMunicipalities(cachedMunicipalities);
+            setLoadingMunicipalities(false);
+            return;
+        }
+
+        const controller = new AbortController();
+
+        fetch(`https://psgc.gitlab.io/api/provinces/${selectedProvinceCode}/cities-municipalities/`, {
+            signal: controller.signal,
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
+                municipalitiesCacheRef.current[selectedProvinceCode] = sorted;
+                setMunicipalities(sorted);
+            })
+            .catch((err) => {
+                if (err.name !== 'AbortError') {
+                    console.error('Failed to fetch municipalities:', err);
+                }
+            })
+            .finally(() => setLoadingMunicipalities(false));
+
+        return () => controller.abort();
+    }, [selectedProvinceCode]);
+
+    // Fetch barangays when municipality changes (with caching)
+    useEffect(() => {
+        if (!selectedMunicipalityCode) {
+            setBarangays([]);
+            setData((prev) => ({ ...prev, userBarangay: '' }));
+            return;
+        }
+
+        setLoadingBarangays(true);
+        setBarangays([]);
+        setData((prev) => ({ ...prev, userBarangay: '' }));
+
+        const cachedBarangays = barangaysCacheRef.current[selectedMunicipalityCode];
+        if (cachedBarangays) {
+            setBarangays(cachedBarangays);
+            setLoadingBarangays(false);
+            return;
+        }
+
+        const controller = new AbortController();
+
+        fetch(`https://psgc.gitlab.io/api/cities-municipalities/${selectedMunicipalityCode}/barangays/`, {
+            signal: controller.signal,
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
+                barangaysCacheRef.current[selectedMunicipalityCode] = sorted;
+                setBarangays(sorted);
+            })
+            .catch((err) => {
+                if (err.name !== 'AbortError') {
+                    console.error('Failed to fetch barangays:', err);
+                }
+            })
+            .finally(() => setLoadingBarangays(false));
+
+        return () => controller.abort();
+    }, [selectedMunicipalityCode]);
 
     useEffect(() => {
         return () => {
             reset('userPassword', 'userPassword_confirmation');
         };
     }, []);
+
+    // Handle province selection
+    const handleProvinceChange = (e) => {
+        const code = e.target.value;
+        const province = provinces.find((p) => p.code === code);
+        setSelectedProvinceCode(code);
+        setData('userProvince', province ? province.name : '');
+    };
+
+    // Handle municipality selection
+    const handleMunicipalityChange = (e) => {
+        const code = e.target.value;
+        const municipality = municipalities.find((m) => m.code === code);
+        setSelectedMunicipalityCode(code);
+        setData('userMunicipality', municipality ? municipality.name : '');
+    };
+
+    // Handle barangay selection
+    const handleBarangayChange = (e) => {
+        const code = e.target.value;
+        const barangay = barangays.find((b) => b.code === code);
+        setData('userBarangay', barangay ? barangay.name : '');
+    };
 
     const handleNextStep = (e) => {
         e.preventDefault();
@@ -397,7 +480,7 @@ export default function Register() {
                                     id="userAge"
                                     type="number"
                                     name="userAge"
-                                    value={data.age}
+                                    value={data.userAge}
                                     className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                     placeholder="Enter your age"
                                     min="1"
@@ -414,7 +497,7 @@ export default function Register() {
                             <select
                                 id="userEthnicity"
                                 name="userEthnicity"
-                                value={data.ethnicity}
+                                value={data.userEthnicity}
                                 onChange={(e) => setData('userEthnicity', e.target.value)}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
                             >
@@ -428,35 +511,43 @@ export default function Register() {
 
                         {/* Province */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userProvince" value="userProvince" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userProvince" value="Province" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userProvince"
                                 name="userProvince"
-                                value={data.province}
-                                onChange={(e) => setData('userProvince', e.target.value)}
-                                className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
+                                value={selectedProvinceCode}
+                                onChange={handleProvinceChange}
+                                disabled={loadingProvinces}
+                                className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                             >
-                                <option value="">Select province</option>
-                                {provinceOptions.map((option) => (
-                                    <option key={option} value={option}>{option}</option>
+                                <option value="">{loadingProvinces ? 'Loading provinces...' : 'Select province'}</option>
+                                {provinces.map((p) => (
+                                    <option key={p.code} value={p.code}>{p.name}</option>
                                 ))}
                             </select>
-                            <InputError message={errors.province} className="mt-2" />
+                            <InputError message={errors.userProvince} className="mt-2" />
                         </div>
 
                         {/* Municipality */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userMunicipality" value="userMunicipality" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userMunicipality" value="City / Municipality" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userMunicipality"
                                 name="userMunicipality"
-                                value={data.municipality}
-                                onChange={(e) => setData('userMunicipality', e.target.value)}
-                                className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
+                                value={selectedMunicipalityCode}
+                                onChange={handleMunicipalityChange}
+                                disabled={!selectedProvinceCode || loadingMunicipalities}
+                                className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                             >
-                                <option value="">Select municipality</option>
-                                {municipalityOptions.map((option) => (
-                                    <option key={option} value={option}>{option}</option>
+                                <option value="">
+                                    {!selectedProvinceCode
+                                        ? 'Select a province first'
+                                        : loadingMunicipalities
+                                            ? 'Loading municipalities...'
+                                            : 'Select city / municipality'}
+                                </option>
+                                {municipalities.map((m) => (
+                                    <option key={m.code} value={m.code}>{m.name}</option>
                                 ))}
                             </select>
                             <InputError message={errors.userMunicipality} className="mt-2" />
@@ -464,17 +555,24 @@ export default function Register() {
 
                         {/* Barangay */}
                         <div className="mb-6">
-                            <InputLabel htmlFor="userBarangay" value="userBarangay" className="text-gray-700 font-medium mb-2" />
+                            <InputLabel htmlFor="userBarangay" value="Barangay" className="text-gray-700 font-medium mb-2" />
                             <select
                                 id="userBarangay"
                                 name="userBarangay"
-                                value={data.barangay}
-                                onChange={(e) => setData('userBarangay', e.target.value)}
-                                className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white"
+                                value={barangays.find((b) => b.name === data.userBarangay)?.code || ''}
+                                onChange={handleBarangayChange}
+                                disabled={!selectedMunicipalityCode || loadingBarangays}
+                                className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                             >
-                                <option value="">Select barangay</option>
-                                {barangayOptions.map((option) => (
-                                    <option key={option} value={option}>{option}</option>
+                                <option value="">
+                                    {!selectedMunicipalityCode
+                                        ? 'Select a municipality first'
+                                        : loadingBarangays
+                                            ? 'Loading barangays...'
+                                            : 'Select barangay'}
+                                </option>
+                                {barangays.map((b) => (
+                                    <option key={b.code} value={b.code}>{b.name}</option>
                                 ))}
                             </select>
                             <InputError message={errors.userBarangay} className="mt-2" />
@@ -487,7 +585,7 @@ export default function Register() {
                                 id="userPurpose"
                                 type="text"
                                 name="userPurpose"
-                                value={data.purpose}
+                                value={data.userPurpose}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all"
                                 placeholder="What is your purpose?"
                                 onChange={(e) => setData('userPurpose', e.target.value)}
