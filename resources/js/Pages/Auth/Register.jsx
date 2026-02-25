@@ -181,7 +181,7 @@ export default function Register() {
             ? option 
             : (option.name 
                 ? option.name 
-                : (option.ethnicity 
+                : (option.ethnicity
                     ? option.ethnicity 
                     : (option.label 
                         ? option.label 
