@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import AppLayout from '@/Layouts/AppLayout';
 
-export default function Dashboard() {
+export default function UserDashboard() {
     const [activeTab, setActiveTab] = useState('overview');
 
     // Sample user data
@@ -37,253 +38,103 @@ export default function Dashboard() {
         { id: 4, name: 'User Research', progress: 30, members: 2, dueDate: 'Mar 25', status: 'pending', color: 'orange' },
     ];
 
-    const handleLogout = () => {
-        router.post(route('logout'));
-    };
-
     return (
-        <>
-            <Head title="Dashboard" />
-            
-            <div className="min-h-screen flex bg-gradient-to-br from-blue-50 to-indigo-100">
-                {/* Sidebar - Fixed width, no collapsing */}
-                <div className="w-64 bg-white/80 backdrop-blur-sm shadow-lg flex flex-col">
-                    {/* Logo */}
-                    <div className="h-20 flex items-center justify-center border-b border-gray-200">
-                        <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                            YourApp
-                        </span>
+        <AppLayout title="Dashboard" user={user}>
+            {/* Welcome Banner */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white mb-6">
+                <h1 className="text-2xl font-bold mb-2">Welcome back, {user.name}! 👋</h1>
+                <p className="text-blue-100">Here's what's happening with your projects today.</p>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                {stats.map((stat) => (
+                    <div key={stat.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-3xl">{stat.icon}</span>
+                            <span className={`text-sm font-medium ${stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'}`}>
+                                {stat.change}
+                            </span>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
+                        <p className="text-gray-600">{stat.name}</p>
                     </div>
+                ))}
+            </div>
 
-                    {/* Navigation */}
-                    <nav className="flex-1 px-3 py-6">
-                        <div className="space-y-2">
-                            <NavItem 
-                                text="Home" 
-                                active={activeTab === 'home'} 
-                                onClick={() => setActiveTab('home')} 
-                            />
-                            
-                            <NavItem 
-                                text="COC Application Process" 
-                                active={activeTab === 'coc-application'} 
-                                onClick={() => setActiveTab('coc-application')} 
-                            />
-                            <NavItem 
-                                text="Application Status" 
-                                active={activeTab === 'application-status'} 
-                                onClick={() => setActiveTab('application-status')} 
-                            />
-                            <NavItem 
-                                text="Issued COC" 
-                                active={activeTab === 'issued-coc'} 
-                                onClick={() => setActiveTab('issued-coc')} 
-                            />
-                            
-                            <NavItem 
-                                text="IP Groups" 
-                                active={activeTab === 'ip-groups'} 
-                                onClick={() => setActiveTab('ip-groups')} 
-                            />
-                            
-                            <NavItem 
-                                text="FAQs" 
-                                active={activeTab === 'faqs'} 
-                                onClick={() => setActiveTab('faqs')} 
-                            />
-                            <NavItem 
-                                text="Downloadable Forms & Requirements" 
-                                active={activeTab === 'downloadable-forms'} 
-                                onClick={() => setActiveTab('downloadable-forms')} 
-                            />
-                            
-                            <NavItem 
-                                text="NCIP Admin Order No. 2" 
-                                active={activeTab === 'ncip-admin-order'} 
-                                onClick={() => setActiveTab('ncip-admin-order')} 
-                            />
+            {/* Projects and Activity Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Projects Section */}
+                <div className="lg:col-span-2">
+                    <div className="bg-white rounded-xl shadow-lg p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-900">Active Projects</h2>
+                            <Link href="#" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                View All →
+                            </Link>
                         </div>
-                    </nav>
-
-                    {/* Empty div to maintain spacing */}
-                    <div className="h-4"></div>
-                </div>
-
-                {/* Main Content */}
-                <div className="flex-1 overflow-auto">
-                    {/* Top Navigation */}
-                    <nav className="bg-white/80 backdrop-blur-sm shadow-sm">
-                        <div className="px-6 py-4">
-                            <div className="flex justify-between items-center">
-                                {/* Empty div to maintain spacing when search is removed */}
-                                <div className="flex-1"></div>
-
-                                {/* Right Navigation */}
-                                <div className="flex items-center space-x-4">
-                                    {/* Notifications */}
-                                    <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all">
-                                        <span className="text-xl">🔔</span>
-                                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                                    </button>
-
-                                    {/* Messages */}
-                                    <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all">
-                                        <span className="text-xl">💬</span>
-                                        <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
-                                    </button>
-
-                                    {/* Profile Dropdown */}
-                                    <div className="relative">
-                                        <button className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg transition-all">
-                                            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white">
-                                                {user.avatar}
+                        <div className="space-y-4">
+                            {projects.map((project) => (
+                                <div key={project.id} className="border-2 border-gray-100 rounded-xl p-4 hover:border-blue-200 transition-all">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center space-x-3">
+                                            <div className={`w-2 h-2 bg-${project.color}-500 rounded-full`}></div>
+                                            <h3 className="font-semibold text-gray-900">{project.name}</h3>
+                                            <span className={`text-xs px-2 py-1 rounded-full ${
+                                                project.status === 'active' 
+                                                    ? 'bg-green-100 text-green-700' 
+                                                    : 'bg-orange-100 text-orange-700'
+                                            }`}>
+                                                {project.status}
+                                            </span>
+                                        </div>
+                                        <span className="text-sm text-gray-500">Due {project.dueDate}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-sm text-gray-600">Progress:</span>
+                                            <div className="w-32 h-2 bg-gray-200 rounded-full">
+                                                <div 
+                                                    className={`h-full bg-${project.color}-500 rounded-full`}
+                                                    style={{ width: `${project.progress}%` }}
+                                                ></div>
                                             </div>
-                                            <span className="text-sm font-medium text-gray-700">{user.name}</span>
-                                        </button>
+                                            <span className="text-sm font-medium text-gray-700">{project.progress}%</span>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-sm text-gray-500">👥 {project.members}</span>
+                                        </div>
                                     </div>
-
-                                    {/* Logout Button */}
-                                    <button
-                                        onClick={handleLogout}
-                                        className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all"
-                                    >
-                                        Logout
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </nav>
-
-                    {/* Dashboard Content */}
-                    <div className="p-6">
-                        {/* Welcome Banner */}
-                        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white mb-6">
-                            <h1 className="text-2xl font-bold mb-2">Welcome back, {user.name}! 👋</h1>
-                            <p className="text-blue-100">Here's what's happening with your projects today.</p>
-                        </div>
-
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                            {stats.map((stat) => (
-                                <div key={stat.id} className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <span className="text-3xl">{stat.icon}</span>
-                                        <span className={`text-sm font-medium ${stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'}`}>
-                                            {stat.change}
-                                        </span>
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
-                                    <p className="text-gray-600">{stat.name}</p>
                                 </div>
                             ))}
                         </div>
+                    </div>
+                </div>
 
-                        {/* Projects and Activity Grid */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Projects Section */}
-                            <div className="lg:col-span-2">
-                                <div className="bg-white rounded-xl shadow-lg p-6">
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-gray-900">Active Projects</h2>
-                                        <Link href="#" className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                            View All →
-                                        </Link>
+                {/* Recent Activity */}
+                <div className="lg:col-span-1">
+                    <div className="bg-white rounded-xl shadow-lg p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
+                        <div className="space-y-4">
+                            {recentActivity.map((activity) => (
+                                <div key={activity.id} className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0">
+                                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                                        {activity.icon}
                                     </div>
-                                    <div className="space-y-4">
-                                        {projects.map((project) => (
-                                            <div key={project.id} className="border-2 border-gray-100 rounded-xl p-4 hover:border-blue-200 transition-all">
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <div className="flex items-center space-x-3">
-                                                        <div className={`w-2 h-2 bg-${project.color}-500 rounded-full`}></div>
-                                                        <h3 className="font-semibold text-gray-900">{project.name}</h3>
-                                                        <span className={`text-xs px-2 py-1 rounded-full ${
-                                                            project.status === 'active' 
-                                                                ? 'bg-green-100 text-green-700' 
-                                                                : 'bg-orange-100 text-orange-700'
-                                                        }`}>
-                                                            {project.status}
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-sm text-gray-500">Due {project.dueDate}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex items-center space-x-2">
-                                                        <span className="text-sm text-gray-600">Progress:</span>
-                                                        <div className="w-32 h-2 bg-gray-200 rounded-full">
-                                                            <div 
-                                                                className={`h-full bg-${project.color}-500 rounded-full`}
-                                                                style={{ width: `${project.progress}%` }}
-                                                            ></div>
-                                                        </div>
-                                                        <span className="text-sm font-medium text-gray-700">{project.progress}%</span>
-                                                    </div>
-                                                    <div className="flex items-center space-x-2">
-                                                        <span className="text-sm text-gray-500">👥 {project.members}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <div className="flex-1">
+                                        <p className="text-sm text-gray-900">
+                                            <span className="font-medium">{activity.action}</span>{' '}
+                                            in <span className="font-medium">{activity.project}</span>
+                                        </p>
+                                        <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Recent Activity */}
-                            <div className="lg:col-span-1">
-                                <div className="bg-white rounded-xl shadow-lg p-6">
-                                    <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h2>
-                                    <div className="space-y-4">
-                                        {recentActivity.map((activity) => (
-                                            <div key={activity.id} className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0">
-                                                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
-                                                    {activity.icon}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="text-sm text-gray-900">
-                                                        <span className="font-medium">{activity.action}</span>{' '}
-                                                        in <span className="font-medium">{activity.project}</span>
-                                                    </p>
-                                                    <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Quick Actions */}
-                        <div className="mt-6">
-                            <div className="bg-white rounded-xl shadow-lg p-6">
-                                <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <QuickActionButton icon="📁" text="New Project" color="blue" />
-                                    <QuickActionButton icon="✅" text="Add Task" color="green" />
-                                    <QuickActionButton icon="👥" text="Invite Team" color="purple" />
-                                    <QuickActionButton icon="📊" text="Generate Report" color="orange" />
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
             </div>
-        </>
-    );
-}
-
-// Sidebar Navigation Item Component - Updated to always show text
-function NavItem({ icon, text, active, onClick }) {
-    return (
-        <button
-            onClick={onClick}
-            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all ${
-                active 
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-200' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-        >
-            <span className="text-xl">{icon}</span>
-            <span className="font-medium">{text}</span>
-        </button>
+        </AppLayout>
     );
 }
 
