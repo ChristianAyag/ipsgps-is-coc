@@ -1,6 +1,6 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function ApplicationStatus() {
     // Sample application data
@@ -35,13 +35,32 @@ export default function ApplicationStatus() {
         { 
             id: 'COC-2024-004', 
             type: 'Certificate of Competency',
-            dateSubmitted: '2024-01-28',
+            dateSubmitted: '4-01-28',
             status: 'rejected',
             progress: 0,
             nextStep: 'Reapply',
             remarks: 'Incomplete requirements. Please check email for details.'
         },
     ]);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
+    const [openDropdownId, setOpenDropdownId] = useState(null);
+    const dropdownRef = useRef(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setOpenDropdownId(null);
+            }
+        }
+        
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     // Status badge color mapping
     const getStatusColor = (status) => {
@@ -84,6 +103,28 @@ export default function ApplicationStatus() {
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
 
+    // Toggle dropdown
+    const toggleDropdown = (id, event) => {
+        event.stopPropagation();
+        setOpenDropdownId(openDropdownId === id ? null : id);
+    };
+
+    // Handle action click
+    const handleAction = (action, application, event) => {
+        event.stopPropagation();
+        setOpenDropdownId(null);
+        // Add your action logic here
+        console.log(`${action} clicked for:`, application);
+    };
+
+    // Filter applications based on search and status
+    const filteredApplications = applications.filter(app => {
+        const matchesSearch = app.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                             app.type.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = filterStatus === '' || app.status === filterStatus;
+        return matchesSearch && matchesStatus;
+    });
+
     return (
         <AppLayout title="Application Status">
             {/* Page Header */}
@@ -124,7 +165,7 @@ export default function ApplicationStatus() {
                     </p>
                 </div>
 
-                {/* Rejected - Now inline with other cards */}
+                {/* Rejected */}
                 <div className={`${getCardColor('rejected')} rounded-xl shadow-lg p-4 border-2`}>
                     <p className="text-sm text-gray-600 mb-1">Rejected</p>
                     <p className={`text-3xl font-bold ${getNumberColor('rejected')}`}>
@@ -140,19 +181,31 @@ export default function ApplicationStatus() {
                         <input
                             type="text"
                             placeholder="Search by Application ID or Type..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
                     <div className="flex gap-2">
-                        <select className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select 
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
                             <option value="">All Status</option>
                             <option value="approved">Approved</option>
                             <option value="under-review">Under Review</option>
                             <option value="pending">Pending</option>
                             <option value="rejected">Rejected</option>
                         </select>
-                        <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all">
-                            Filter
+                        <button 
+                            onClick={() => {
+                                setSearchTerm('');
+                                setFilterStatus('');
+                            }}
+                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all"
+                        >
+                            Clear Filters
                         </button>
                     </div>
                 </div>
@@ -174,52 +227,116 @@ export default function ApplicationStatus() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {applications.map((application) => (
-                                <tr key={application.id} className="hover:bg-gray-50 transition-all">
-                                    <td className="px-6 py-4">
-                                        <span className="font-medium text-gray-900">{application.id}</span>
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-600">{application.type}</td>
-                                    <td className="px-6 py-4 text-gray-600">{formatDate(application.dateSubmitted)}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(application.status)}`}>
-                                            {application.status.charAt(0).toUpperCase() + application.status.slice(1).replace('-', ' ')}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center space-x-2">
-                                            <div className="w-24 h-2 bg-gray-200 rounded-full">
-                                                <div 
-                                                    className={`h-full rounded-full ${
-                                                        application.status === 'approved' ? 'bg-green-500' :
-                                                        application.status === 'rejected' ? 'bg-red-500' :
-                                                        application.status === 'under-review' ? 'bg-blue-500' :
-                                                        'bg-yellow-500'
-                                                    }`}
-                                                    style={{ width: `${application.progress}%` }}
-                                                ></div>
+                            {filteredApplications.length > 0 ? (
+                                filteredApplications.map((application) => (
+                                    <tr key={application.id} className="hover:bg-gray-50 transition-all relative">
+                                        <td className="px-6 py-4">
+                                            <span className="font-medium text-gray-900">{application.id}</span>
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600">{application.type}</td>
+                                        <td className="px-6 py-4 text-gray-600">{formatDate(application.dateSubmitted)}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(application.status)}`}>
+                                                {application.status.charAt(0).toUpperCase() + application.status.slice(1).replace('-', ' ')}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="w-24 h-2 bg-gray-200 rounded-full">
+                                                    <div 
+                                                        className={`h-full rounded-full ${
+                                                            application.status === 'approved' ? 'bg-green-500' :
+                                                            application.status === 'rejected' ? 'bg-red-500' :
+                                                            application.status === 'under-review' ? 'bg-blue-500' :
+                                                            'bg-yellow-500'
+                                                        }`}
+                                                        style={{ width: `${application.progress}%` }}
+                                                    ></div>
+                                                </div>
+                                                <span className="text-sm text-gray-600">{application.progress}%</span>
                                             </div>
-                                            <span className="text-sm text-gray-600">{application.progress}%</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-sm text-gray-600">{application.nextStep}</span>
-                                        {application.remarks && (
-                                            <p className="text-xs text-gray-500 mt-1">{application.remarks}</p>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex space-x-2">
-                                            <button className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-all text-sm font-medium">
-                                                View
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-sm text-gray-600">{application.nextStep}</span>
+                                            {application.remarks && (
+                                                <p className="text-xs text-gray-500 mt-1">{application.remarks}</p>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 relative">
+                                            {/* Actions button with 3-dots SVG */}
+                                            <button
+                                                onClick={(e) => toggleDropdown(application.id, e)}
+                                                className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all flex items-center justify-center"
+                                                title="Actions"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+                                                </svg>
                                             </button>
-                                            <button className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded-lg transition-all text-sm font-medium">
-                                                Details
-                                            </button>
-                                        </div>
+                                            
+                                            {/* Dropdown Menu */}
+                                            {openDropdownId === application.id && (
+                                                <div 
+                                                    ref={dropdownRef}
+                                                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50"
+                                                    style={{ minWidth: '180px' }}
+                                                >
+                                                    <div className="py-1">
+                                                        <button 
+                                                            onClick={(e) => handleAction('View Details', application, e)}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all flex items-center gap-2"
+                                                        >
+                                                            <span className="text-base">👁️</span> View Details
+                                                        </button>
+                                                        <button 
+                                                            onClick={(e) => handleAction('Track Progress', application, e)}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all flex items-center gap-2"
+                                                        >
+                                                            <span className="text-base">📊</span> Track Progress
+                                                        </button>
+                                                        <button 
+                                                            onClick={(e) => handleAction('Upload Documents', application, e)}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all flex items-center gap-2"
+                                                        >
+                                                            <span className="text-base">📎</span> Upload Documents
+                                                        </button>
+                                                        <button 
+                                                            onClick={(e) => handleAction('Download Form', application, e)}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all flex items-center gap-2"
+                                                        >
+                                                            <span className="text-base">📄</span> Download Form
+                                                        </button>
+                                                        <div className="border-t border-gray-200 my-1"></div>
+                                                        <button 
+                                                            onClick={(e) => handleAction('Cancel Application', application, e)}
+                                                            className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all flex items-center gap-2"
+                                                        >
+                                                            <span className="text-base">✖️</span> Cancel Application
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="7" className="px-6 py-12 text-center">
+                                        <div className="text-4xl mb-4 font-bold text-gray-300">📄</div>
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Applications Found</h3>
+                                        <p className="text-gray-600 mb-4">No applications match your search criteria.</p>
+                                        <button 
+                                            onClick={() => {
+                                                setSearchTerm('');
+                                                setFilterStatus('');
+                                            }}
+                                            className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
+                                        >
+                                            Clear Filters
+                                        </button>
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
@@ -266,7 +383,6 @@ export default function ApplicationStatus() {
                     </div>
                 </div>
             </div>
-
         </AppLayout>
     );
 }
