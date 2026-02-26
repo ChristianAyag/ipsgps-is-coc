@@ -94,6 +94,14 @@ class User extends Authenticatable Implements MustVerifyEmail
     ];
 
     /**
+     * Get the email address that should be used for verification.
+     */
+    public function getEmailForVerification(): string
+    {
+        return $this->userEmail;
+    }
+
+    /**
      * Get the user role associated with the user.
      */
     public function userRole()
@@ -302,10 +310,6 @@ class User extends Authenticatable Implements MustVerifyEmail
     /**
      * Get the email field for authentication.
      */
-    public function getEmailForVerification()
-    {
-        return $this->userEmail;
-    }
     public function routeNotificationForMail($notification = null){
         return $this -> userEmail;
     }
