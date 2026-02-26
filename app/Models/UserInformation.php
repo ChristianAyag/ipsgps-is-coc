@@ -49,6 +49,7 @@ class UserInformation extends Model
         'birthDate',
         'userAge',
         'userEthnicity',
+        'userRegion',
         'userProvince',
         'userMunicipality',
         'userBarangay',

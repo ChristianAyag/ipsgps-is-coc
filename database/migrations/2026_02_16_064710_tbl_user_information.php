@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('regs_userInformation', function (Blueprint $table) {
             $table->string('userInfoID', 50)->primary();
             $table->string('userID', 50);
-            $table->string('birthDate', 20); // Using string for flexibility with date formats
-            $table->integer('userAge')->unsigned(); // Unsigned ensures non-negative
+            $table->string('birthDate', 20); 
+            $table->integer('userAge')->unsigned(); 
             $table->string('userEthnicity', 100);
+            $table->string('userRegion', 100);
             $table->string('userProvince', 100);
             $table->string('userMunicipality', 100);
             $table->string('userBarangay', 100);

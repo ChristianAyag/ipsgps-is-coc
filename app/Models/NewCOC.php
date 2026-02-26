@@ -46,6 +46,8 @@ class NewCOC extends Model
      */
     protected $fillable = [
         'controlID',
+        'controlNumber',
+        'trackerID',
         'userID',
         'userIPLeaderName',
         'userIPLeaderRegion',
@@ -59,10 +61,20 @@ class NewCOC extends Model
         'userMotherName',
         'userMotherEthnicity',
         'userMotherOrigin',
-        'userCMIDFileName',
-        'userCMIDFilePath',
-        'userPhotoFileName',
-        'userPhotoFilePath',
+        'currentStatus',
+        'previousControlID',
+        'applicationType',
+        'reviewed_by',
+        'reviewed_at',
+        'review_remarks',
+        'approved_by',
+        'approved_at',
+        'released_by',
+        'released_to',
+        'released_to_relationship',
+        'release_date',
+        'submitted_at',
+        'last_updated',
     ];
 
     /**
@@ -73,6 +85,11 @@ class NewCOC extends Model
     protected function casts(): array
     {
         return [
+            'reviewed_at' => 'datetime',
+            'approved_at' => 'datetime',
+            'release_date' => 'datetime',
+            'submitted_at' => 'datetime',
+            'last_updated' => 'datetime',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -85,8 +102,6 @@ class NewCOC extends Model
      */
     protected $appends = [
         'ip_leader_full_address',
-        'cmid_full_url',
-        'photo_full_url',
     ];
 
     /**
@@ -95,8 +110,7 @@ class NewCOC extends Model
      * @var array<int, string>
      */
     protected $hidden = [
-        'userCMIDFilePath',
-        'userPhotoFilePath',
+        // no hidden columns
     ];
 
     /**
@@ -105,6 +119,38 @@ class NewCOC extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'userID', 'userID');
+    }
+
+    /**
+     * Previous application (if this is a follow‑up).
+     */
+    public function previous(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'previousControlID', 'controlID');
+    }
+
+    /**
+     * User who reviewed the application (nullable).
+     */
+    public function reviewedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by', 'userID');
+    }
+
+    /**
+     * User who approved the application (nullable).
+     */
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by', 'userID');
+    }
+
+    /**
+     * User who released the application (nullable).
+     */
+    public function releasedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'released_by', 'userID');
     }
 
     /**
@@ -120,41 +166,7 @@ class NewCOC extends Model
         ]));
     }
 
-    /**
-     * Get the full URL for CMID file.
-     */
-    public function getCmidFullUrlAttribute(): ?string
-    {
-        return $this->userCMIDFilePath 
-            ? Storage::url($this->userCMIDFilePath) 
-            : null;
-    }
-
-    /**
-     * Get the full URL for photo file.
-     */
-    public function getPhotoFullUrlAttribute(): ?string
-    {
-        return $this->userPhotoFilePath 
-            ? Storage::url($this->userPhotoFilePath) 
-            : null;
-    }
-
-    /**
-     * Check if CMID file exists.
-     */
-    public function hasCMIDFile(): bool
-    {
-        return $this->userCMIDFilePath && Storage::exists($this->userCMIDFilePath);
-    }
-
-    /**
-     * Check if photo file exists.
-     */
-    public function hasPhotoFile(): bool
-    {
-        return $this->userPhotoFilePath && Storage::exists($this->userPhotoFilePath);
-    }
+    // file-related accessors and helpers removed (not in migration)
 
     /**
      * Scope queries by location (region, province, municipality, barangay)
@@ -209,35 +221,12 @@ class NewCOC extends Model
         }
     }
 
-    /**
-     * Scope to get records with files
-     */
-    public function scopeHasFiles($query): void
-    {
-        $query->where(function($q) {
-            $q->whereNotNull('userCMIDFilePath')
-              ->orWhereNotNull('userPhotoFilePath');
-        });
-    }
+    // scopeHasFiles removed; no file columns exist
 
     /**
      * Delete associated files when model is deleted.
      */
-    protected static function booted(): void
-    {
-        static::deleting(function ($model) {
-            $files = array_filter([
-                $model->userCMIDFilePath,
-                $model->userPhotoFilePath,
-            ]);
-
-            foreach ($files as $file) {
-                if (Storage::exists($file)) {
-                    Storage::delete($file);
-                }
-            }
-        });
-    }
+    // booted method removed since no file paths need cleanup
 
     /**
      * Generate a unique control ID.

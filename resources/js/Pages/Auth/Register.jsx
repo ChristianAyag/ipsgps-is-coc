@@ -15,9 +15,12 @@ export default function Register() {
     const [provinces, setProvinces] = useState([]);
     const [municipalities, setMunicipalities] = useState([]);
     const [barangays, setBarangays] = useState([]);
+    const [regions, setRegions] = useState([]);
+    const [loadingRegion, setLoadingRegion] = useState(false);
     const [loadingProvinces, setLoadingProvinces] = useState(false);
     const [loadingMunicipalities, setLoadingMunicipalities] = useState(false);
     const [loadingBarangays, setLoadingBarangays] = useState(false);
+    const [selectedRegionCode, setSelectedRegionCode] = useState('');
     const [selectedProvinceCode, setSelectedProvinceCode] = useState('');
     const [selectedMunicipalityCode, setSelectedMunicipalityCode] = useState('');
 
@@ -38,6 +41,7 @@ export default function Register() {
         birthDate: '',
         userAge: '',
         userEthnicity: '',
+        userRegion: '',
         userProvince: '',
         userMunicipality: '',
         userBarangay: '',
@@ -51,10 +55,40 @@ export default function Register() {
     const [ethnicityOptions, setEthnicityOptions] = useState([]);
     const [loadingEthnicities, setLoadingEthnicities] = useState(false);
 
-    // Fetch provinces on mount
+    // Fetch regions on mount
     useEffect(() => {
+        setLoadingRegion(true);
+        fetch('https://psgc.gitlab.io/api/regions/')
+            .then((res) => res.json())
+            .then((data) => {
+                const sorted = data.sort((a, b) => a.code.localeCompare(b.code));
+                setRegions(sorted);
+            })
+            .catch((err) => console.error('Failed to fetch regions:', err))
+            .finally(() => setLoadingRegion(false));
+    }, []);
+
+    // Fetch provinces when region changes
+    useEffect(() => {
+        if (!selectedRegionCode) {
+            setProvinces([]);
+            setMunicipalities([]);
+            setBarangays([]);
+            setSelectedProvinceCode('');
+            setSelectedMunicipalityCode('');
+            setData((prev) => ({ ...prev, userProvince: '', userMunicipality: '', userBarangay: '' }));
+            return;
+        }
+
         setLoadingProvinces(true);
-        fetch('https://psgc.gitlab.io/api/provinces/')
+        setProvinces([]);
+        setMunicipalities([]);
+        setBarangays([]);
+        setSelectedProvinceCode('');
+        setSelectedMunicipalityCode('');
+        setData((prev) => ({ ...prev, userProvince: '', userMunicipality: '', userBarangay: '' }));
+
+        fetch(`https://psgc.gitlab.io/api/regions/${selectedRegionCode}/provinces/`)
             .then((res) => res.json())
             .then((data) => {
                 const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
@@ -62,7 +96,7 @@ export default function Register() {
             })
             .catch((err) => console.error('Failed to fetch provinces:', err))
             .finally(() => setLoadingProvinces(false));
-    }, []);
+    }, [selectedRegionCode]);
 
     // Fetch municipalities when province changes (with caching)
     useEffect(() => {
@@ -195,6 +229,14 @@ export default function Register() {
 
         fetchEthnoGroups();
     }, []);
+
+    // Handle region selection
+    const handleRegionChange = (e) => {
+        const code = e.target.value;
+        const region = regions.find((r) => r.code === code);
+        setSelectedRegionCode(code);
+        setData('userRegion', region ? region.name : '');
+    };
 
     // Handle province selection
     const handleProvinceChange = (e) => {
@@ -574,6 +616,25 @@ export default function Register() {
                             <InputError message={errors.userEthnicity} className="mt-2" />
                         </div>
 
+                        {/* Region */}
+                        <div className="mb-6">
+                            <InputLabel htmlFor="userRegion" value="Region" className="text-gray-700 font-medium mb-2" />
+                            <select
+                                id="userRegion"
+                                name="userRegion"
+                                value={selectedRegionCode}
+                                onChange={handleRegionChange}
+                                disabled={loadingRegion}
+                                className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            >
+                                <option value="">{loadingRegion ? 'Loading regions...' : 'Select region'}</option>
+                                {regions.map((r) => (
+                                    <option key={r.code} value={r.code}>{r.regionName}</option>
+                                ))}
+                            </select>
+                            <InputError message={errors.userRegion} className="mt-2" />
+                        </div>
+
                         {/* Province */}
                         <div className="mb-6">
                             <InputLabel htmlFor="userProvince" value="Province" className="text-gray-700 font-medium mb-2" />
@@ -582,10 +643,16 @@ export default function Register() {
                                 name="userProvince"
                                 value={selectedProvinceCode}
                                 onChange={handleProvinceChange}
-                                disabled={loadingProvinces}
+                                disabled={!selectedRegionCode || loadingProvinces}
                                 className="mt-1 block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-blue-500 transition-all appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
                             >
-                                <option value="">{loadingProvinces ? 'Loading provinces...' : 'Select province'}</option>
+                                <option value="">
+                                    {!selectedRegionCode
+                                        ? 'Select a region first'
+                                        : loadingProvinces
+                                            ? 'Loading provinces...'
+                                            : 'Select province'}
+                                </option>
                                 {provinces.map((p) => (
                                     <option key={p.code} value={p.code}>{p.name}</option>
                                 ))}

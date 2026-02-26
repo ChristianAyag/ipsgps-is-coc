@@ -106,7 +106,7 @@ class User extends Authenticatable Implements MustVerifyEmail
      */
     public function userInformation()
     {
-        return $this->hasOne(RegsUserInformation::class, 'userID', 'userID');
+        return $this->hasOne(UserInformation::class, 'userID', 'userID');
     }
 
     /**
@@ -114,7 +114,7 @@ class User extends Authenticatable Implements MustVerifyEmail
      */
     public function cocApplications()
     {
-        return $this->hasMany(ApplicationNewCOC::class, 'userID', 'userID');
+        return $this->hasMany(NewCOC::class, 'userID', 'userID');
     }
 
     /**
@@ -130,7 +130,7 @@ class User extends Authenticatable Implements MustVerifyEmail
      */
     public function reviewedApplications()
     {
-        return $this->hasMany(ApplicationNewCOC::class, 'reviewed_by', 'userID');
+        return $this->hasMany(NewCOC::class, 'reviewed_by', 'userID');
     }
 
     /**
@@ -138,7 +138,7 @@ class User extends Authenticatable Implements MustVerifyEmail
      */
     public function approvedApplications()
     {
-        return $this->hasMany(ApplicationNewCOC::class, 'approved_by', 'userID');
+        return $this->hasMany(NewCOC::class, 'approved_by', 'userID');
     }
 
     /**
@@ -146,7 +146,7 @@ class User extends Authenticatable Implements MustVerifyEmail
      */
     public function releasedApplications()
     {
-        return $this->hasMany(ApplicationNewCOC::class, 'released_by', 'userID');
+        return $this->hasMany(NewCOC::class, 'released_by', 'userID');
     }
 
     /**
