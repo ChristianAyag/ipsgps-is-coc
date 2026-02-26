@@ -672,7 +672,7 @@ export default function Register() {
                 <footer className="bg-white/80 backdrop-blur-sm py-4">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <p className="text-center text-sm text-gray-500">
-                            © 2026 IPSGPS. All rights reserved.
+                            {/* © 2026 IPSGPS. All rights reserved. */}
                         </p>
                     </div>
                 </footer>
