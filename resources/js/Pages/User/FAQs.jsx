@@ -239,55 +239,6 @@ export default function FAQs() {
                 </div>
             </div>
 
-            {/* Still Have Questions Section */}
-            <div className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-8 text-white">
-                <div className="text-center max-w-2xl mx-auto">
-                    <h2 className="text-2xl font-bold mb-3">Still have questions?</h2>
-                    <p className="text-blue-100 mb-6">
-                        Can't find the answer you're looking for? Please reach out to our support team.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button className="px-6 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-all font-semibold">
-                            Contact Support
-                        </button>
-                        <button className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white/10 transition-all font-semibold">
-                            Schedule a Call
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* Quick Help Links */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-all">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xl mx-auto mb-3">
-                        📞
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Call Us</h3>
-                    <p className="text-sm text-gray-600 mb-2">Monday - Friday, 8AM - 5PM</p>
-                    <p className="text-blue-600 font-semibold">(02) 1234-5678</p>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-all">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold text-xl mx-auto mb-3">
-                        ✉️
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Email Us</h3>
-                    <p className="text-sm text-gray-600 mb-2">We'll respond within 24 hours</p>
-                    <p className="text-green-600 font-semibold">support@yourapp.com</p>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition-all">
-                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold text-xl mx-auto mb-3">
-                        💬
-                    </div>
-                    <h3 className="font-semibold text-gray-900 mb-2">Live Chat</h3>
-                    <p className="text-sm text-gray-600 mb-2">Available 24/7 for urgent concerns</p>
-                    <button className="text-purple-600 font-semibold hover:text-purple-800">
-                        Start Chat →
-                    </button>
-                </div>
-            </div>
         </AppLayout>
     );
 }
