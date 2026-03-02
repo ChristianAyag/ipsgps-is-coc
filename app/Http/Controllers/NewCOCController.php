@@ -7,9 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Symfony\Component\HttpFoundation\Response;// For download return type
+use Symfony\Component\HttpFoundation\Response;
 
 class NewCOCController extends Controller
 {
@@ -24,17 +23,28 @@ class NewCOCController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('userIPLeaderName', 'like', "%{$search}%")
+                $q->where('IPLeaderName', 'like', "%{$search}%")
                   ->orWhere('controlID', 'like', "%{$search}%");
             });
         }
 
-        // Location filters
-        $filters = ['region', 'province', 'municipality', 'barangay'];
-        foreach ($filters as $filter) {
-            if ($request->has($filter)) {
-                $query->where("userIPLeader" . ucfirst($filter), $request->$filter);
-            }
+        // Location filters using model scope
+        if ($request->has('region')) {
+            $query->inLocation('region', $request->region);
+        }
+        if ($request->has('province')) {
+            $query->inLocation('province', $request->province);
+        }
+        if ($request->has('municipality')) {
+            $query->inLocation('municipality', $request->municipality);
+        }
+        if ($request->has('barangay')) {
+            $query->inLocation('barangay', $request->barangay);
+        }
+
+        // Status filter
+        if ($request->has('status')) {
+            $query->where('currentStatus', $request->status);
         }
 
         return response()->json([
@@ -49,20 +59,20 @@ class NewCOCController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'userID' => 'required|exists:tblUsers,userID',
-            'userIPLeaderName' => 'required|string|max:255',
-            'userIPLeaderRegion' => 'required|string|max:100',
-            'userIPLeaderProvince' => 'required|string|max:100',
-            'userIPLeaderMunicipality' => 'required|string|max:100',
-            'userIPLeaderBarangay' => 'required|string|max:100',
-            'userFatherName' => 'required|string|max:255',
-            'userFatherEthnicity' => 'required|string|max:100',
-            'userFatherOrigin' => 'required|string|max:255',
-            'userMotherName' => 'required|string|max:255',
-            'userMotherEthnicity' => 'required|string|max:100',
-            'userMotherOrigin' => 'required|string|max:255',
-            'userCMIDFile' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'userPhotoFile' => 'required|file|mimes:jpg,jpeg,png|max:5120',
+            'userID' => 'required|exists:login_users,userID',
+            'IPLeaderName' => 'required|string|max:255',
+            'IPLeaderRegion' => 'required|string|max:100',
+            'IPLeaderProvince' => 'required|string|max:100',
+            'IPLeaderMunicipality' => 'required|string|max:100',
+            'IPLeaderBarangay' => 'required|string|max:100',
+            'IPLeaderDistrict' => 'nullable|string|max:100',
+            'FatherName' => 'required|string|max:255',
+            'FatherEthnicity' => 'required|string|max:100',
+            'FatherOrigin' => 'required|string|max:255',
+            'MotherName' => 'required|string|max:255',
+            'MotherEthnicity' => 'required|string|max:100',
+            'MotherOrigin' => 'required|string|max:255',
+            'applicationType' => 'nullable|string|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -72,34 +82,24 @@ class NewCOCController extends Controller
         DB::beginTransaction();
 
         try {
-            $controlID = 'COC' . now()->format('YmdHis') . mt_rand(1000, 9999);
-
-            // Upload files
-            $cmidFile = $request->file('userCMIDFile');
-            $photoFile = $request->file('userPhotoFile');
-            
-            $cmidPath = $cmidFile->store("coc/{$controlID}", 'public');
-            $photoPath = $photoFile->store("coc/{$controlID}", 'public');
-
-            $coc = NewCOC::create([
-                'controlID' => $controlID,
+            // Create COC record with auto-generated control ID
+            $coc = NewCOC::createWithID([
                 'userID' => $request->userID,
-                'userIPLeaderName' => $request->userIPLeaderName,
-                'userIPLeaderRegion' => $request->userIPLeaderRegion,
-                'userIPLeaderProvince' => $request->userIPLeaderProvince,
-                'userIPLeaderDistrict' => $request->userIPLeaderDistrict,
-                'userIPLeaderMunicipality' => $request->userIPLeaderMunicipality,
-                'userIPLeaderBarangay' => $request->userIPLeaderBarangay,
-                'userFatherName' => $request->userFatherName,
-                'userFatherEthnicity' => $request->userFatherEthnicity,
-                'userFatherOrigin' => $request->userFatherOrigin,
-                'userMotherName' => $request->userMotherName,
-                'userMotherEthnicity' => $request->userMotherEthnicity,
-                'userMotherOrigin' => $request->userMotherOrigin,
-                'userCMIDFileName' => $cmidFile->getClientOriginalName(),
-                'userCMIDFilePath' => $cmidPath,
-                'userPhotoFileName' => $photoFile->getClientOriginalName(),
-                'userPhotoFilePath' => $photoPath,
+                'IPLeaderName' => $request->IPLeaderName,
+                'IPLeaderRegion' => $request->IPLeaderRegion,
+                'IPLeaderProvince' => $request->IPLeaderProvince,
+                'IPLeaderDistrict' => $request->IPLeaderDistrict,
+                'IPLeaderMunicipality' => $request->IPLeaderMunicipality,
+                'IPLeaderBarangay' => $request->IPLeaderBarangay,
+                'FatherName' => $request->FatherName,
+                'FatherEthnicity' => $request->FatherEthnicity,
+                'FatherOrigin' => $request->FatherOrigin,
+                'MotherName' => $request->MotherName,
+                'MotherEthnicity' => $request->MotherEthnicity,
+                'MotherOrigin' => $request->MotherOrigin,
+                'applicationType' => $request->applicationType,
+                'currentStatus' => 'submitted',
+                'submitted_at' => now(),
             ]);
 
             DB::commit();
@@ -154,19 +154,20 @@ class NewCOCController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'userIPLeaderName' => 'sometimes|string|max:255',
-            'userIPLeaderRegion' => 'sometimes|string|max:100',
-            'userIPLeaderProvince' => 'sometimes|string|max:100',
-            'userIPLeaderMunicipality' => 'sometimes|string|max:100',
-            'userIPLeaderBarangay' => 'sometimes|string|max:100',
-            'userFatherName' => 'sometimes|string|max:255',
-            'userFatherEthnicity' => 'sometimes|string|max:100',
-            'userFatherOrigin' => 'sometimes|string|max:255',
-            'userMotherName' => 'sometimes|string|max:255',
-            'userMotherEthnicity' => 'sometimes|string|max:100',
-            'userMotherOrigin' => 'sometimes|string|max:255',
-            'userCMIDFile' => 'sometimes|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'userPhotoFile' => 'sometimes|file|mimes:jpg,jpeg,png|max:5120',
+            'IPLeaderName' => 'sometimes|string|max:255',
+            'IPLeaderRegion' => 'sometimes|string|max:100',
+            'IPLeaderProvince' => 'sometimes|string|max:100',
+            'IPLeaderMunicipality' => 'sometimes|string|max:100',
+            'IPLeaderBarangay' => 'sometimes|string|max:100',
+            'IPLeaderDistrict' => 'sometimes|nullable|string|max:100',
+            'FatherName' => 'sometimes|string|max:255',
+            'FatherEthnicity' => 'sometimes|string|max:100',
+            'FatherOrigin' => 'sometimes|string|max:255',
+            'MotherName' => 'sometimes|string|max:255',
+            'MotherEthnicity' => 'sometimes|string|max:100',
+            'MotherOrigin' => 'sometimes|string|max:255',
+            'applicationType' => 'sometimes|nullable|string|max:100',
+            'currentStatus' => 'sometimes|string|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -176,24 +177,15 @@ class NewCOCController extends Controller
         DB::beginTransaction();
 
         try {
-            $data = $request->except(['userCMIDFile', 'userPhotoFile']);
+            $data = $request->only([
+                'IPLeaderName', 'IPLeaderRegion', 'IPLeaderProvince',
+                'IPLeaderMunicipality', 'IPLeaderBarangay', 'IPLeaderDistrict',
+                'FatherName', 'FatherEthnicity', 'FatherOrigin',
+                'MotherName', 'MotherEthnicity', 'MotherOrigin',
+                'applicationType', 'currentStatus',
+            ]);
 
-            // Handle file updates
-            if ($request->hasFile('userCMIDFile')) {
-                Storage::disk('public')->delete($coc->userCMIDFilePath);
-                
-                $file = $request->file('userCMIDFile');
-                $data['userCMIDFileName'] = $file->getClientOriginalName();
-                $data['userCMIDFilePath'] = $file->store("coc/{$coc->controlID}", 'public');
-            }
-
-            if ($request->hasFile('userPhotoFile')) {
-                Storage::disk('public')->delete($coc->userPhotoFilePath);
-                
-                $file = $request->file('userPhotoFile');
-                $data['userPhotoFileName'] = $file->getClientOriginalName();
-                $data['userPhotoFilePath'] = $file->store("coc/{$coc->controlID}", 'public');
-            }
+            $data['last_updated'] = now();
 
             $coc->update($data);
 
@@ -231,10 +223,6 @@ class NewCOCController extends Controller
         DB::beginTransaction();
 
         try {
-            // Delete files
-            Storage::disk('public')->delete([$coc->userCMIDFilePath, $coc->userPhotoFilePath]);
-            Storage::disk('public')->deleteDirectory("coc/{$coc->controlID}");
-            
             $coc->delete();
 
             DB::commit();
@@ -268,30 +256,103 @@ class NewCOCController extends Controller
     }
 
     /**
-     * Download file.
+     * Mark COC record as reviewed.
      */
-    public function downloadFile(string $id, string $type)
+    public function review(Request $request, string $id): JsonResponse
     {
         $coc = NewCOC::find($id);
 
         if (!$coc) {
             return response()->json([
                 'success' => false,
-                'message' => 'Record not found'
+                'message' => 'COC record not found'
             ], 404);
         }
 
-        $path = $type === 'cmid' ? $coc->userCMIDFilePath : $coc->userPhotoFilePath;
-        $name = $type === 'cmid' ? $coc->userCMIDFileName : $coc->userPhotoFileName;
+        $validator = Validator::make($request->all(), [
+            'review_remarks' => 'nullable|string|max:1000',
+        ]);
 
-        if (!$path || !Storage::disk('public')->exists($path)) {
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $coc->update([
+            'reviewed_by' => auth()->user()->userID ?? null,
+            'reviewed_at' => now(),
+            'review_remarks' => $request->review_remarks,
+            'currentStatus' => 'reviewed',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'COC record marked as reviewed',
+            'data' => $coc->fresh()
+        ]);
+    }
+
+    /**
+     * Mark COC record as approved.
+     */
+    public function approve(Request $request, string $id): JsonResponse
+    {
+        $coc = NewCOC::find($id);
+
+        if (!$coc) {
             return response()->json([
                 'success' => false,
-                'message' => 'File not found'
+                'message' => 'COC record not found'
             ], 404);
         }
 
-        $fullPath = Storage::disk('public')->path($path);
-        return response()->download($fullPath, $name);
+        $coc->update([
+            'approved_by' => auth()->user()->userID ?? null,
+            'approved_at' => now(),
+            'currentStatus' => 'approved',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'COC record approved',
+            'data' => $coc->fresh()
+        ]);
+    }
+
+    /**
+     * Mark COC record as released.
+     */
+    public function release(Request $request, string $id): JsonResponse
+    {
+        $coc = NewCOC::find($id);
+
+        if (!$coc) {
+            return response()->json([
+                'success' => false,
+                'message' => 'COC record not found'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'released_to' => 'required|string|max:255',
+            'released_to_relationship' => 'nullable|string|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $coc->update([
+            'released_by' => auth()->user()->userID ?? null,
+            'released_to' => $request->released_to,
+            'released_to_relationship' => $request->released_to_relationship,
+            'release_date' => now(),
+            'currentStatus' => 'released',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'COC record released',
+            'data' => $coc->fresh()
+        ]);
     }
 }

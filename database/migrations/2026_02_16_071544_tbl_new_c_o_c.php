@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('application_newCOC', function (Blueprint $table) {
             // Primary Identifiers
             $table->string('controlID')->primary();
-            $table->string('controlNumber')->unique();
             $table->string('trackerID')->unique();
             $table->string('userID');
             

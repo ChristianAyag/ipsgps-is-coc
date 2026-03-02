@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class NewCOC extends Model
 {
@@ -46,21 +45,20 @@ class NewCOC extends Model
      */
     protected $fillable = [
         'controlID',
-        'controlNumber',
         'trackerID',
         'userID',
-        'userIPLeaderName',
-        'userIPLeaderRegion',
-        'userIPLeaderProvince',
-        'userIPLeaderDistrict',
-        'userIPLeaderMunicipality',
-        'userIPLeaderBarangay',
-        'userFatherName',
-        'userFatherEthnicity',
-        'userFatherOrigin',
-        'userMotherName',
-        'userMotherEthnicity',
-        'userMotherOrigin',
+        'IPLeaderName',
+        'IPLeaderRegion',
+        'IPLeaderProvince',
+        'IPLeaderDistrict',
+        'IPLeaderMunicipality',
+        'IPLeaderBarangay',
+        'FatherName',
+        'FatherEthnicity',
+        'FatherOrigin',
+        'MotherName',
+        'MotherEthnicity',
+        'MotherOrigin',
         'currentStatus',
         'previousControlID',
         'applicationType',
@@ -82,18 +80,15 @@ class NewCOC extends Model
      *
      * @var array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'reviewed_at' => 'datetime',
-            'approved_at' => 'datetime',
-            'release_date' => 'datetime',
-            'submitted_at' => 'datetime',
-            'last_updated' => 'datetime',
-            'created_at' => 'datetime',
-            'updated_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'reviewed_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'release_date' => 'datetime',
+        'submitted_at' => 'datetime',
+        'last_updated' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     /**
      * The accessors to append to the model's array form.
@@ -156,13 +151,13 @@ class NewCOC extends Model
     /**
      * Get the full address of the IP Leader.
      */
-    public function getIPLeaderFullAddressAttribute(): string
+    public function getIpLeaderFullAddressAttribute(): string
     {
         return implode(', ', array_filter([
-            $this->userIPLeaderBarangay,
-            $this->userIPLeaderMunicipality,
-            $this->userIPLeaderProvince,
-            $this->userIPLeaderRegion,
+            $this->IPLeaderBarangay,
+            $this->IPLeaderMunicipality,
+            $this->IPLeaderProvince,
+            $this->IPLeaderRegion,
         ]));
     }
 
@@ -174,12 +169,12 @@ class NewCOC extends Model
     public function scopeInLocation($query, string $level, string $value): void
     {
         $column = match($level) {
-            'region' => 'userIPLeaderRegion',
-            'province' => 'userIPLeaderProvince',
-            'municipality' => 'userIPLeaderMunicipality',
-            'city' => 'userIPLeaderMunicipality',
-            'barangay' => 'userIPLeaderBarangay',
-            'district' => 'userIPLeaderDistrict',
+            'region' => 'IPLeaderRegion',
+            'province' => 'IPLeaderProvince',
+            'municipality' => 'IPLeaderMunicipality',
+            'city' => 'IPLeaderMunicipality',
+            'barangay' => 'IPLeaderBarangay',
+            'district' => 'IPLeaderDistrict',
             default => null
         };
 
@@ -194,9 +189,9 @@ class NewCOC extends Model
     public function scopeSearchByName($query, string $type, string $search): void
     {
         $column = match($type) {
-            'ip_leader' => 'userIPLeaderName',
-            'father' => 'userFatherName',
-            'mother' => 'userMotherName',
+            'ip_leader' => 'IPLeaderName',
+            'father' => 'FatherName',
+            'mother' => 'MotherName',
             default => null
         };
 
@@ -211,8 +206,8 @@ class NewCOC extends Model
     public function scopeByEthnicity($query, string $type, string $ethnicity): void
     {
         $column = match($type) {
-            'father' => 'userFatherEthnicity',
-            'mother' => 'userMotherEthnicity',
+            'father' => 'FatherEthnicity',
+            'mother' => 'MotherEthnicity',
             default => null
         };
 
@@ -241,11 +236,31 @@ class NewCOC extends Model
     }
 
     /**
+     * Generate a unique tracker ID.
+     */
+    public static function generateTrackerID(): string
+    {
+        $prefix = 'TRK';
+        $timestamp = now()->format('YmdHis');
+        $random = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+        return $prefix . $timestamp . $random;
+    }
+
+    /**
      * Create a new COC record with auto-generated control ID.
      */
     public static function createWithID(array $attributes = []): self
     {
-        $attributes['controlID'] = self::generateControlID();
+        // Ensure controlID, controlNumber and trackerID are provided
+        if (empty($attributes['controlID'])) {
+            $attributes['controlID'] = self::generateControlID();
+        }
+
+        if (empty($attributes['trackerID'])) {
+            $attributes['trackerID'] = self::generateTrackerID();
+        }
+
         return self::create($attributes);
     }
 }
