@@ -19,20 +19,20 @@ return new class extends Migration
             $table->string('userID');
             
             // Applicant Information
-            $table->string('userIPLeaderName');
-            $table->string('userIPLeaderRegion')->nullable();
-            $table->string('userIPLeaderProvince')->nullable();
-            $table->string('userIPLeaderDistrict')->nullable();
-            $table->string('userIPLeaderMunicipality')->nullable();
-            $table->string('userIPLeaderBarangay')->nullable();
+            $table->string('IPLeaderName');
+            $table->string('IPLeaderRegion')->nullable();
+            $table->string('IPLeaderProvince')->nullable();
+            $table->string('IPLeaderDistrict')->nullable();
+            $table->string('IPLeaderMunicipality')->nullable();
+            $table->string('IPLeaderBarangay')->nullable();
             
             // Family Information
-            $table->string('userFatherName')->nullable();
-            $table->string('userFatherEthnicity')->nullable();
-            $table->string('userFatherOrigin')->nullable();
-            $table->string('userMotherName')->nullable();
-            $table->string('userMotherEthnicity')->nullable();
-            $table->string('userMotherOrigin')->nullable();
+            $table->string('FatherName')->nullable();
+            $table->string('FatherEthnicity')->nullable();
+            $table->string('FatherOrigin')->nullable();
+            $table->string('MotherName')->nullable();
+            $table->string('MotherEthnicity')->nullable();
+            $table->string('MotherOrigin')->nullable();
             
             // Status & Tracking
             $table->string('currentStatus')->default('pending');
