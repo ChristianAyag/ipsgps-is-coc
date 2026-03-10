@@ -229,22 +229,179 @@ class NewCOC extends Model
     public static function generateControlID(): string
     {
         $prefix = 'COC';
-        $timestamp = now()->format('YmdHis');
-        $random = str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
-        
-        return $prefix . $timestamp . $random;
+        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $maxIndex = strlen($characters) - 1;
+        $random = '';
+
+        for ($i = 0; $i < 6; $i++) {
+            $random .= $characters[random_int(0, $maxIndex)];
+        }
+
+        return $prefix . $random;
     }
 
     /**
      * Generate a unique tracker ID.
      */
-    public static function generateTrackerID(): string
+    public static function generateTrackerID(?string $region = null): string
     {
-        $prefix = 'TRK';
-        $timestamp = now()->format('YmdHis');
-        $random = str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
+        $prefix = self::buildTrackerPrefix($region);
+        $random = self::generateTrackerSuffix();
 
-        return $prefix . $timestamp . $random;
+        return $prefix . '-' . $random;
+    }
+
+    /**
+     * Generate random tracker suffix (7 chars, alphanumeric mixed-case).
+     */
+    protected static function generateTrackerSuffix(int $length = 7): string
+    {
+        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+        $maxIndex = strlen($characters) - 1;
+        $suffix = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $suffix .= $characters[random_int(0, $maxIndex)];
+        }
+
+        return $suffix;
+    }
+
+    /**
+     * Build a tracker prefix from region name/abbreviation.
+     */
+    protected static function buildTrackerPrefix(?string $region): string
+    {
+        if (!$region) {
+            return 'R00';
+        }
+
+        $normalized = strtoupper(trim($region));
+        $compact = preg_replace('/[^A-Z0-9]/', '', $normalized);
+
+        if (preg_match('/\bBARMM\b/', $normalized) === 1) {
+            return 'BARMM';
+        }
+
+        if (preg_match('/\bCARAGA\b/', $normalized) === 1) {
+            return 'CARAGA';
+        }
+
+        if (preg_match('/\bCAR\b/', $normalized) === 1) {
+            return 'CAR';
+        }
+
+        if (str_contains($normalized, 'NCR')) {
+            return 'NCR';
+        }
+
+        // Region name aliases that may come from user info without "Region <n>" format.
+        $nameToNumber = [
+            'ILOCOSREGION' => 1,
+            'CAGAYANVALLEY' => 2,
+            'CENTRALLUZON' => 3,
+            'CALABARZON' => 4,
+            'MIMAROPA' => 4,
+            'BICOLREGION' => 5,
+            'WESTERNVISAYAS' => 6,
+            'CENTRALVISAYAS' => 7,
+            'EASTERNVISAYAS' => 8,
+            'ZAMBOANGAPENINSULA' => 9,
+            'NORTHERNMINDANAO' => 10,
+            'DAVAOREGION' => 11,
+            'SOCCSKSARGEN' => 12,
+        ];
+        foreach ($nameToNumber as $alias => $number) {
+            if (str_contains($compact, $alias)) {
+                return sprintf('R%02d', $number);
+            }
+        }
+
+        // Accept values like "II", "IV-A", "02", "2" without the word "Region".
+        if (preg_match('/^(0?[1-9]|1[0-2])$/', $compact) === 1) {
+            return sprintf('R%02d', (int) $compact);
+        }
+
+        if (preg_match('/^(I|II|III|IV|V|VI|VII|VIII|IX|X|XI|XII|XIII)$/', $compact) === 1) {
+            $regionNumber = self::parseRegionNumber($compact);
+            if ($regionNumber !== null) {
+                return sprintf('R%02d', $regionNumber);
+            }
+        }
+
+        if (str_starts_with($compact, 'IVA') || str_starts_with($compact, 'IVB')) {
+            return 'R04';
+        }
+
+        if (preg_match('/\bREGION\s*([IVXLCDM]+|\d{1,2})\b/i', $normalized, $matches) === 1) {
+            $regionNumber = self::parseRegionNumber($matches[1]);
+            if ($regionNumber !== null) {
+                return sprintf('R%02d', $regionNumber);
+            }
+        }
+
+        if (preg_match('/\bR\s*(\d{1,2})\b/i', $normalized, $matches) === 1) {
+            return sprintf('R%02d', (int) $matches[1]);
+        }
+
+        return 'R00';
+    }
+
+    /**
+     * Parse a region token that can be arabic or roman numeral.
+     */
+    protected static function parseRegionNumber(string $token): ?int
+    {
+        $token = strtoupper(trim($token));
+
+        if (ctype_digit($token)) {
+            return (int) $token;
+        }
+
+        $romanMap = [
+            'I' => 1,
+            'V' => 5,
+            'X' => 10,
+            'L' => 50,
+            'C' => 100,
+            'D' => 500,
+            'M' => 1000,
+        ];
+
+        $total = 0;
+        $previousValue = 0;
+
+        for ($index = strlen($token) - 1; $index >= 0; $index--) {
+            $char = $token[$index];
+
+            if (!isset($romanMap[$char])) {
+                return null;
+            }
+
+            $currentValue = $romanMap[$char];
+            if ($currentValue < $previousValue) {
+                $total -= $currentValue;
+            } else {
+                $total += $currentValue;
+                $previousValue = $currentValue;
+            }
+        }
+
+        return $total > 0 ? $total : null;
+    }
+
+    /**
+     * Fetch user region from regs_userInformation table.
+     */
+    protected static function resolveUserRegion(?string $userID): ?string
+    {
+        if (!$userID) {
+            return null;
+        }
+
+        return UserInformation::query()
+            ->where('userID', $userID)
+            ->value('userRegion');
     }
 
     /**
@@ -257,8 +414,15 @@ class NewCOC extends Model
             $attributes['controlID'] = self::generateControlID();
         }
 
+        $userRegion = self::resolveUserRegion($attributes['userID'] ?? null);
+        $region = $userRegion ?? ($attributes['IPLeaderRegion'] ?? null);
+
+        if ($userRegion) {
+            $attributes['IPLeaderRegion'] = $userRegion;
+        }
+
         if (empty($attributes['trackerID'])) {
-            $attributes['trackerID'] = self::generateTrackerID();
+            $attributes['trackerID'] = self::generateTrackerID($region);
         }
 
         return self::create($attributes);
