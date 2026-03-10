@@ -24,17 +24,17 @@ export default function AppLayout({ title, children }) {
             <Head title={title} />
             
             <div className="min-h-screen flex bg-gradient-to-br from-blue-50 to-indigo-100">
-                {/* Sidebar - Fixed width, no collapsing */}
-                <div className="w-64 bg-white/80 backdrop-blur-sm shadow-lg flex flex-col">
+                {/* Sidebar - Fixed position */}
+                <div className="w-64 fixed inset-y-0 left-0 bg-white/80 backdrop-blur-sm shadow-lg flex flex-col z-30">
                     {/* Logo */}
-                    <div className="h-20 flex items-center justify-center border-b border-gray-200">
+                    <div className="h-20 flex items-center justify-center border-b border-gray-200 flex-shrink-0">
                         <Link href="/user/dashboard" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                             IPSGPS
                         </Link>
                     </div>
 
-                    {/* Navigation */}
-                    <nav className="flex-1 px-3 py-6">
+                    {/* Navigation - Scrollable if content overflows */}
+                    <nav className="flex-1 px-3 py-6 overflow-y-auto">
                         <div className="space-y-2">
                             <NavLink 
                                 href="/user/dashboard"
@@ -87,13 +87,13 @@ export default function AppLayout({ title, children }) {
                     </nav>
 
                     {/* Empty div to maintain spacing */}
-                    <div className="h-4"></div>
+                    <div className="h-4 flex-shrink-0"></div>
                 </div>
 
-                {/* Main Content */}
-                <div className="flex-1 overflow-auto">
-                    {/* Top Navigation */}
-                    <nav className="bg-white/80 backdrop-blur-sm shadow-sm">
+                {/* Main Content - Offset for fixed sidebar */}
+                <div className="flex-1 ml-64 overflow-auto">
+                    {/* Top Navigation - Fixed position */}
+                    <nav className="fixed top-0 right-0 left-64 bg-white/80 backdrop-blur-sm shadow-sm z-20">
                         <div className="px-6 py-4">
                             <div className="flex justify-between items-center">
                                 {/* Empty div to maintain spacing when search is removed */}
@@ -196,8 +196,8 @@ export default function AppLayout({ title, children }) {
                         </div>
                     </nav>
 
-                    {/* Page Content */}
-                    <div className="p-6">
+                    {/* Page Content - Offset for fixed top nav */}
+                    <div className="p-6 mt-20">
                         {children}
                     </div>
                 </div>
