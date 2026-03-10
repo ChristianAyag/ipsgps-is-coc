@@ -415,14 +415,13 @@ class NewCOC extends Model
         }
 
         $userRegion = self::resolveUserRegion($attributes['userID'] ?? null);
-        $region = $userRegion ?? ($attributes['IPLeaderRegion'] ?? null);
 
-        if ($userRegion) {
-            $attributes['IPLeaderRegion'] = $userRegion;
-        }
+        // Tracker prefix should be based on the user's registered region (if available),
+        // and should not be affected by the IP Leader Region selected in the form.
+        $trackerRegion = $userRegion ?: ($attributes['IPLeaderRegion'] ?? null);
 
         if (empty($attributes['trackerID'])) {
-            $attributes['trackerID'] = self::generateTrackerID($region);
+            $attributes['trackerID'] = self::generateTrackerID($trackerRegion);
         }
 
         return self::create($attributes);

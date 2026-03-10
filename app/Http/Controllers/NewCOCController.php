@@ -8,10 +8,20 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class NewCOCController extends Controller
 {
+    /**
+     * Show the COC application form (Inertia page).
+     */
+    public function create(): InertiaResponse
+    {
+        return Inertia::render('User/COCApplication');
+    }
+
     /**
      * Display a listing of COC records.
      */

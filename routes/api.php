@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [RegisteredUserController::class, 'store'])->name('api.register');
 
 // NewCOC test routes
-Route::post('/coc/store', [NewCOCController::class, 'store'])->name('coc.store');
+Route::post('/coc', [NewCOCController::class, 'store'])->name('coc.store');
 Route::get('/coc/{id}', [NewCOCController::class, 'show'])->name('coc.show');
 Route::get('/coc', [NewCOCController::class, 'index'])->name('coc.index');
 Route::put('/coc/{id}', [NewCOCController::class, 'update'])->name('coc.update');

@@ -5,6 +5,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\NewCOCController;
 use Inertia\Inertia;
 
 // Make login the landing page
@@ -39,9 +40,7 @@ Route::get('/admin/dashboard', function () {
 })->name('admin.dashboard');
 
 // Add your other public pages here
-Route::get('/user/coc-application', function () {
-    return Inertia::render('User/COCApplication');
-})->name('user.coc-application');
+Route::get('/user/coc-application', [NewCOCController::class, 'create'])->name('user.coc-application');
 
 Route::get('/user/application-status', function () {
     return Inertia::render('User/ApplicationStatus');
