@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApplicationDocument;
 use App\Models\NewCOC;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -83,6 +86,8 @@ class NewCOCController extends Controller
             'MotherEthnicity' => 'required|string|max:100',
             'MotherOrigin' => 'required|string|max:255',
             'applicationType' => 'nullable|string|max:100',
+            'docType' => 'nullable|string|max:50',
+            'document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         if ($validator->fails()) {
@@ -90,6 +95,8 @@ class NewCOCController extends Controller
         }
 
         DB::beginTransaction();
+
+        $storedRelativePath = null;
 
         try {
             // Create COC record with auto-generated control ID
@@ -112,6 +119,33 @@ class NewCOCController extends Controller
                 'submitted_at' => now(),
             ]);
 
+            $file = $request->file('document');
+            $docType = $request->input('docType', 'document');
+
+            $originalExtension = strtolower($file->getClientOriginalExtension() ?: 'bin');
+            $safeExtension = preg_replace('/[^a-z0-9]/', '', $originalExtension) ?: 'bin';
+            $randomSuffix = Str::random(10);
+            $timestamp = now()->format('YmdHis');
+            $storedFileName = "{$docType}_{$timestamp}_{$randomSuffix}.{$safeExtension}";
+
+            $userFolder = "application_documents/{$request->userID}/{$coc->controlID}";
+            $storedRelativePath = $file->storeAs($userFolder, $storedFileName, 'public');
+
+            if (!$storedRelativePath) {
+                throw new \RuntimeException('Failed to store uploaded document.');
+            }
+
+            ApplicationDocument::create([
+                'docID' => (string) Str::uuid(),
+                'controlID' => $coc->controlID,
+                'docType' => $docType,
+                'fileName' => $storedFileName,
+                'filePath' => $storedRelativePath,
+                'uploaded_at' => now(),
+                'uploaded_by' => $request->userID,
+                'isVerified' => false,
+            ]);
+
             DB::commit();
 
             return response()->json([
@@ -122,6 +156,9 @@ class NewCOCController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
+            if ($storedRelativePath) {
+                Storage::disk('public')->delete($storedRelativePath);
+            }
             return response()->json([
                 'success' => false,
                 'message' => 'Creation failed: ' . $e->getMessage()
