@@ -12,7 +12,53 @@ import FilePreview from "@/Components/COC/FilePreview";
 
 // ========== MOVE STEP COMPONENTS OUTSIDE THE MAIN COMPONENT ==========
 
-const Step1_IPLeader = memo(({ formData, errors, handleChange, regions, provinces }) => (
+const getEthnicityOption = (option, index) => {
+    const value = typeof option === 'string'
+        ? option
+        : (option.name
+            ? option.name
+            : (option.ethnicity
+                ? option.ethnicity
+                : (option.value
+                    ? option.value
+                    : JSON.stringify(option))));
+
+    const label = typeof option === 'string'
+        ? option
+        : (option.name
+            ? option.name
+            : (option.ethnicity
+                ? option.ethnicity
+                : (option.label
+                    ? option.label
+                    : (option.value
+                        ? option.value
+                        : 'Unknown'))));
+
+    return { value, label, key: index };
+};
+
+const Step1_IPLeader = memo(({
+    formData,
+    errors,
+    handleChange,
+    regions,
+    provinces,
+    municipalities,
+    barangays,
+    selectedRegionCode,
+    selectedProvinceCode,
+    selectedMunicipalityCode,
+    selectedBarangayCode,
+    loadingRegion,
+    loadingProvinces,
+    loadingMunicipalities,
+    loadingBarangays,
+    handleIPLeaderRegionChange,
+    handleIPLeaderProvinceChange,
+    handleIPLeaderMunicipalityChange,
+    handleIPLeaderBarangayChange,
+}) => (
     <div className="space-y-6">
         <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -47,15 +93,18 @@ const Step1_IPLeader = memo(({ formData, errors, handleChange, regions, province
                 </label>
                 <select
                     name="IPLeaderRegion"
-                    value={formData.IPLeaderRegion}
-                    onChange={handleChange}
+                    value={selectedRegionCode}
+                    onChange={handleIPLeaderRegionChange}
+                    disabled={loadingRegion}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.IPLeaderRegion ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    } disabled:bg-gray-100 disabled:cursor-not-allowed`}
                 >
-                    <option value="">Select Region</option>
-                    {regions.map(region => (
-                        <option key={region} value={region}>{region}</option>
+                    <option value="">
+                        {loadingRegion ? 'Loading regions...' : 'Select Region'}
+                    </option>
+                    {regions.map(r => (
+                        <option key={r.code} value={r.code}>{r.regionName || r.name}</option>
                     ))}
                 </select>
                 {errors.IPLeaderRegion && (
@@ -69,15 +118,18 @@ const Step1_IPLeader = memo(({ formData, errors, handleChange, regions, province
                 </label>
                 <select
                     name="IPLeaderProvince"
-                    value={formData.IPLeaderProvince}
-                    onChange={handleChange}
+                    value={selectedProvinceCode}
+                    onChange={handleIPLeaderProvinceChange}
+                    disabled={!selectedRegionCode || loadingProvinces}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.IPLeaderProvince ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    } disabled:bg-gray-100 disabled:cursor-not-allowed`}
                 >
-                    <option value="">Select Province</option>
-                    {provinces.map(province => (
-                        <option key={province} value={province}>{province}</option>
+                    <option value="">
+                        {loadingProvinces ? 'Loading provinces...' : 'Select Province'}
+                    </option>
+                    {provinces.map(p => (
+                        <option key={p.code} value={p.code}>{p.name}</option>
                     ))}
                 </select>
                 {errors.IPLeaderProvince && (
@@ -89,16 +141,22 @@ const Step1_IPLeader = memo(({ formData, errors, handleChange, regions, province
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                     Municipality <span className="text-red-500">*</span>
                 </label>
-                <input
-                    type="text"
+                <select
                     name="IPLeaderMunicipality"
-                    value={formData.IPLeaderMunicipality}
-                    onChange={handleChange}
+                    value={selectedMunicipalityCode}
+                    onChange={handleIPLeaderMunicipalityChange}
+                    disabled={!selectedProvinceCode || loadingMunicipalities}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.IPLeaderMunicipality ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter municipality"
-                />
+                    } disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                >
+                    <option value="">
+                        {loadingMunicipalities ? 'Loading municipalities...' : 'Select Municipality'}
+                    </option>
+                    {municipalities.map(m => (
+                        <option key={m.code} value={m.code}>{m.name}</option>
+                    ))}
+                </select>
                 {errors.IPLeaderMunicipality && (
                     <p className="mt-1 text-sm text-red-600">{errors.IPLeaderMunicipality}</p>
                 )}
@@ -108,16 +166,22 @@ const Step1_IPLeader = memo(({ formData, errors, handleChange, regions, province
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                     Barangay <span className="text-red-500">*</span>
                 </label>
-                <input
-                    type="text"
+                <select
                     name="IPLeaderBarangay"
-                    value={formData.IPLeaderBarangay}
-                    onChange={handleChange}
+                    value={selectedBarangayCode}
+                    onChange={handleIPLeaderBarangayChange}
+                    disabled={!selectedMunicipalityCode || loadingBarangays}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.IPLeaderBarangay ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter barangay"
-                />
+                    } disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                >
+                    <option value="">
+                        {loadingBarangays ? 'Loading barangays...' : 'Select Barangay'}
+                    </option>
+                    {barangays.map(b => (
+                        <option key={b.code} value={b.code}>{b.name}</option>
+                    ))}
+                </select>
                 {errors.IPLeaderBarangay && (
                     <p className="mt-1 text-sm text-red-600">{errors.IPLeaderBarangay}</p>
                 )}
@@ -140,7 +204,7 @@ const Step1_IPLeader = memo(({ formData, errors, handleChange, regions, province
     </div>
 ));
 
-const Step2_Father = memo(({ formData, errors, handleChange }) => (
+const Step2_Father = memo(({ formData, errors, handleChange, ethnicityOptions, loadingEthnicities }) => (
     <div className="space-y-6">
         <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -173,16 +237,27 @@ const Step2_Father = memo(({ formData, errors, handleChange }) => (
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                     Father's Ethnicity <span className="text-red-500">*</span>
                 </label>
-                <input
-                    type="text"
+                <select
                     name="FatherEthnicity"
                     value={formData.FatherEthnicity}
                     onChange={handleChange}
+                    disabled={loadingEthnicities}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.FatherEthnicity ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="e.g., Tagalog, Cebuano, Ilocano"
-                />
+                    } disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                >
+                    <option value="">
+                        {loadingEthnicities ? 'Loading ethnicities...' : 'Select ethnicity'}
+                    </option>
+                    {ethnicityOptions.map((option, index) => {
+                        const { value, label, key } = getEthnicityOption(option, index);
+                        return (
+                            <option key={key} value={value}>
+                                {label}
+                            </option>
+                        );
+                    })}
+                </select>
                 {errors.FatherEthnicity && (
                     <p className="mt-1 text-sm text-red-600">{errors.FatherEthnicity}</p>
                 )}
@@ -210,7 +285,7 @@ const Step2_Father = memo(({ formData, errors, handleChange }) => (
     </div>
 ));
 
-const Step3_Mother = memo(({ formData, errors, handleChange }) => (
+const Step3_Mother = memo(({ formData, errors, handleChange, ethnicityOptions, loadingEthnicities }) => (
     <div className="space-y-6">
         <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
@@ -243,16 +318,27 @@ const Step3_Mother = memo(({ formData, errors, handleChange }) => (
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                     Mother's Ethnicity <span className="text-red-500">*</span>
                 </label>
-                <input
-                    type="text"
+                <select
                     name="MotherEthnicity"
                     value={formData.MotherEthnicity}
                     onChange={handleChange}
+                    disabled={loadingEthnicities}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                         errors.MotherEthnicity ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="e.g., Tagalog, Cebuano, Ilocano"
-                />
+                    } disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                >
+                    <option value="">
+                        {loadingEthnicities ? 'Loading ethnicities...' : 'Select ethnicity'}
+                    </option>
+                    {ethnicityOptions.map((option, index) => {
+                        const { value, label, key } = getEthnicityOption(option, index);
+                        return (
+                            <option key={key} value={value}>
+                                {label}
+                            </option>
+                        );
+                    })}
+                </select>
                 {errors.MotherEthnicity && (
                     <p className="mt-1 text-sm text-red-600">{errors.MotherEthnicity}</p>
                 )}
@@ -374,39 +460,223 @@ export default function COCApplication({ auth }) {
     // Validation errors
     const [errors, setErrors] = useState({});
 
-    // Philippine regions data
-    const regions = [
-        'NCR - National Capital Region',
-        'CAR - Cordillera Administrative Region',
-        'Region I - Ilocos Region',
-        'Region II - Cagayan Valley',
-        'Region III - Central Luzon',
-        'Region IV-A - CALABARZON',
-        'Region IV-B - MIMAROPA',
-        'Region V - Bicol Region',
-        'Region VI - Western Visayas',
-        'Region VII - Central Visayas',
-        'Region VIII - Eastern Visayas',
-        'Region IX - Zamboanga Peninsula',
-        'Region X - Northern Mindanao',
-        'Region XI - Davao Region',
-        'Region XII - SOCCSKSARGEN',
-        'Region XIII - Caraga',
-        'BARMM - Bangsamoro Autonomous Region in Muslim Mindanao'
-    ];
+    // PSGC API dropdown state (regions -> provinces -> municipalities -> barangays)
+    const [regions, setRegions] = useState([]);
+    const [provinces, setProvinces] = useState([]);
+    const [municipalities, setMunicipalities] = useState([]);
+    const [barangays, setBarangays] = useState([]);
+    const [loadingRegion, setLoadingRegion] = useState(false);
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingMunicipalities, setLoadingMunicipalities] = useState(false);
+    const [loadingBarangays, setLoadingBarangays] = useState(false);
+    const [selectedRegionCode, setSelectedRegionCode] = useState('');
+    const [selectedProvinceCode, setSelectedProvinceCode] = useState('');
+    const [selectedMunicipalityCode, setSelectedMunicipalityCode] = useState('');
+    const [selectedBarangayCode, setSelectedBarangayCode] = useState('');
+    const municipalitiesCacheRef = useRef({});
+    const barangaysCacheRef = useRef({});
 
-    const provinces = [
-        'Metro Manila',
-        'Bulacan',
-        'Cavite',
-        'Laguna',
-        'Rizal',
-        'Quezon',
-        'Batangas',
-        'Pampanga',
-        'Nueva Ecija',
-        'Tarlac'
-    ];
+    // DRIP API dropdown state (ethnogroups)
+    const [ethnicityOptions, setEthnicityOptions] = useState([]);
+    const [loadingEthnicities, setLoadingEthnicities] = useState(false);
+
+    const psgcBaseUrl = (import.meta.env.VITE_PSGC_API_URL || 'https://psgc.gitlab.io/api').replace(/\/+$/, '');
+    const psgcApiKey = import.meta.env.VITE_PSGC_API_KEY;
+    const psgcFetch = (path, init = {}) => {
+        const headers = {
+            ...(init.headers || {}),
+            ...(psgcApiKey ? { 'X-API-KEY': psgcApiKey } : {}),
+        };
+
+        return fetch(`${psgcBaseUrl}${path}`, { ...init, headers });
+    };
+
+    // Fetch regions on mount
+    useEffect(() => {
+        setLoadingRegion(true);
+        psgcFetch('/regions/')
+            .then((res) => res.json())
+            .then((data) => {
+                const sorted = data.sort((a, b) => a.code.localeCompare(b.code));
+                setRegions(sorted);
+            })
+            .catch((err) => console.error('Failed to fetch regions:', err))
+            .finally(() => setLoadingRegion(false));
+    }, []);
+
+    // Fetch provinces when region changes
+    useEffect(() => {
+        if (!selectedRegionCode) {
+            setProvinces([]);
+            setMunicipalities([]);
+            setBarangays([]);
+            setSelectedProvinceCode('');
+            setSelectedMunicipalityCode('');
+            setSelectedBarangayCode('');
+            setFormData(prev => ({
+                ...prev,
+                IPLeaderProvince: '',
+                IPLeaderMunicipality: '',
+                IPLeaderBarangay: '',
+            }));
+            return;
+        }
+
+        setLoadingProvinces(true);
+        setProvinces([]);
+        setMunicipalities([]);
+        setBarangays([]);
+        setSelectedProvinceCode('');
+        setSelectedMunicipalityCode('');
+        setSelectedBarangayCode('');
+        setFormData(prev => ({
+            ...prev,
+            IPLeaderProvince: '',
+            IPLeaderMunicipality: '',
+            IPLeaderBarangay: '',
+        }));
+
+        psgcFetch(`/regions/${selectedRegionCode}/provinces/`)
+            .then((res) => res.json())
+            .then((data) => {
+                const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
+                setProvinces(sorted);
+            })
+            .catch((err) => console.error('Failed to fetch provinces:', err))
+            .finally(() => setLoadingProvinces(false));
+    }, [selectedRegionCode]);
+
+    // Fetch municipalities when province changes (with caching)
+    useEffect(() => {
+        if (!selectedProvinceCode) {
+            setMunicipalities([]);
+            setBarangays([]);
+            setSelectedMunicipalityCode('');
+            setSelectedBarangayCode('');
+            setFormData(prev => ({
+                ...prev,
+                IPLeaderMunicipality: '',
+                IPLeaderBarangay: '',
+            }));
+            return;
+        }
+
+        setLoadingMunicipalities(true);
+        setMunicipalities([]);
+        setBarangays([]);
+        setSelectedMunicipalityCode('');
+        setSelectedBarangayCode('');
+        setFormData(prev => ({
+            ...prev,
+            IPLeaderMunicipality: '',
+            IPLeaderBarangay: '',
+        }));
+
+        const cachedMunicipalities = municipalitiesCacheRef.current[selectedProvinceCode];
+        if (cachedMunicipalities) {
+            setMunicipalities(cachedMunicipalities);
+            setLoadingMunicipalities(false);
+            return;
+        }
+
+        psgcFetch(`/provinces/${selectedProvinceCode}/cities-municipalities/`)
+            .then((res) => res.json())
+            .then((data) => {
+                const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
+                municipalitiesCacheRef.current[selectedProvinceCode] = sorted;
+                setMunicipalities(sorted);
+            })
+            .catch((err) => console.error('Failed to fetch municipalities:', err))
+            .finally(() => setLoadingMunicipalities(false));
+    }, [selectedProvinceCode]);
+
+    // Fetch barangays when municipality changes (with caching + abort)
+    useEffect(() => {
+        if (!selectedMunicipalityCode) {
+            setBarangays([]);
+            setSelectedBarangayCode('');
+            setFormData(prev => ({ ...prev, IPLeaderBarangay: '' }));
+            return;
+        }
+
+        const cachedBarangays = barangaysCacheRef.current[selectedMunicipalityCode];
+        if (cachedBarangays) {
+            setBarangays(cachedBarangays);
+            return;
+        }
+
+        const controller = new AbortController();
+        setLoadingBarangays(true);
+        setBarangays([]);
+        setSelectedBarangayCode('');
+        setFormData(prev => ({ ...prev, IPLeaderBarangay: '' }));
+
+        psgcFetch(`/cities-municipalities/${selectedMunicipalityCode}/barangays/`, {
+            signal: controller.signal,
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
+                barangaysCacheRef.current[selectedMunicipalityCode] = sorted;
+                setBarangays(sorted);
+            })
+            .catch((err) => {
+                if (err.name !== 'AbortError') {
+                    console.error('Failed to fetch barangays:', err);
+                }
+            })
+            .finally(() => setLoadingBarangays(false));
+
+        return () => controller.abort();
+    }, [selectedMunicipalityCode]);
+
+    // Fetch ethnogroups from DRIP API
+    useEffect(() => {
+        const fetchEthnoGroups = async () => {
+            const dripUrl = import.meta.env.VITE_NCIP_DRIP_API_URL;
+            const dripKey = import.meta.env.VITE_NCIP_DRIP_API_KEY;
+
+            if (!dripUrl || !dripKey) {
+                setEthnicityOptions([]);
+                return;
+            }
+
+            setLoadingEthnicities(true);
+            try {
+                const res = await fetch(dripUrl, {
+                    method: 'GET',
+                    headers: {
+                        'X-API-KEY': dripKey,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
+                const json = await res.json();
+                const options = Array.isArray(json)
+                    ? json
+                    : (json.data && Array.isArray(json.data))
+                        ? json.data
+                        : (json.ethnogroups && Array.isArray(json.ethnogroups))
+                            ? json.ethnogroups
+                            : (json.records && Array.isArray(json.records))
+                                ? json.records
+                                : [];
+
+                setEthnicityOptions(options);
+            } catch (err) {
+                console.error('Failed to fetch ethno groups:', err);
+                setEthnicityOptions([]);
+            } finally {
+                setLoadingEthnicities(false);
+            }
+        };
+
+        fetchEthnoGroups();
+    }, []);
 
     // ========== HANDLERS ==========
     
@@ -424,6 +694,81 @@ export default function COCApplication({ auth }) {
             }));
         }
     }, [errors]);
+
+    const clearFieldError = (fieldName) => {
+        setErrors(prev => (prev[fieldName] ? { ...prev, [fieldName]: '' } : prev));
+    };
+
+    const handleIPLeaderRegionChange = (e) => {
+        const code = e.target.value;
+        const region = regions.find((r) => r.code === code);
+        const regionName = region ? (region.regionName || region.name || '') : '';
+
+        setSelectedRegionCode(code);
+        setSelectedProvinceCode('');
+        setSelectedMunicipalityCode('');
+        setSelectedBarangayCode('');
+        setFormData(prev => ({
+            ...prev,
+            IPLeaderRegion: regionName,
+            IPLeaderProvince: '',
+            IPLeaderMunicipality: '',
+            IPLeaderBarangay: '',
+        }));
+
+        clearFieldError('IPLeaderRegion');
+        clearFieldError('IPLeaderProvince');
+        clearFieldError('IPLeaderMunicipality');
+        clearFieldError('IPLeaderBarangay');
+    };
+
+    const handleIPLeaderProvinceChange = (e) => {
+        const code = e.target.value;
+        const province = provinces.find((p) => p.code === code);
+
+        setSelectedProvinceCode(code);
+        setSelectedMunicipalityCode('');
+        setSelectedBarangayCode('');
+        setFormData(prev => ({
+            ...prev,
+            IPLeaderProvince: province ? province.name : '',
+            IPLeaderMunicipality: '',
+            IPLeaderBarangay: '',
+        }));
+
+        clearFieldError('IPLeaderProvince');
+        clearFieldError('IPLeaderMunicipality');
+        clearFieldError('IPLeaderBarangay');
+    };
+
+    const handleIPLeaderMunicipalityChange = (e) => {
+        const code = e.target.value;
+        const municipality = municipalities.find((m) => m.code === code);
+
+        setSelectedMunicipalityCode(code);
+        setSelectedBarangayCode('');
+        setFormData(prev => ({
+            ...prev,
+            IPLeaderMunicipality: municipality ? municipality.name : '',
+            IPLeaderBarangay: '',
+        }));
+
+        clearFieldError('IPLeaderMunicipality');
+        clearFieldError('IPLeaderBarangay');
+    };
+
+    const handleIPLeaderBarangayChange = (e) => {
+        const code = e.target.value;
+        const barangay = barangays.find((b) => b.code === code);
+
+        setSelectedBarangayCode(code);
+        setFormData(prev => ({
+            ...prev,
+            IPLeaderBarangay: barangay ? barangay.name : '',
+        }));
+
+        clearFieldError('IPLeaderBarangay');
+    };
 
     const handleFileUpload = (file) => {
         setUploadedFile(file);
@@ -528,6 +873,11 @@ export default function COCApplication({ auth }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!formData.userID) {
+            setError('Please log in to submit an application.');
+            return;
+        }
         
         if (!validateStep()) {
             return;
@@ -558,7 +908,7 @@ export default function COCApplication({ auth }) {
                 setSuccess(true);
                 
                 setTimeout(() => {
-                    router.visit('/application-status');
+                    router.visit('/user/application-status');
                 }, 3000);
             }
         } catch (error) {
@@ -684,6 +1034,20 @@ export default function COCApplication({ auth }) {
                             handleChange={handleChange}
                             regions={regions}
                             provinces={provinces}
+                            municipalities={municipalities}
+                            barangays={barangays}
+                            selectedRegionCode={selectedRegionCode}
+                            selectedProvinceCode={selectedProvinceCode}
+                            selectedMunicipalityCode={selectedMunicipalityCode}
+                            selectedBarangayCode={selectedBarangayCode}
+                            loadingRegion={loadingRegion}
+                            loadingProvinces={loadingProvinces}
+                            loadingMunicipalities={loadingMunicipalities}
+                            loadingBarangays={loadingBarangays}
+                            handleIPLeaderRegionChange={handleIPLeaderRegionChange}
+                            handleIPLeaderProvinceChange={handleIPLeaderProvinceChange}
+                            handleIPLeaderMunicipalityChange={handleIPLeaderMunicipalityChange}
+                            handleIPLeaderBarangayChange={handleIPLeaderBarangayChange}
                         />
                     )}
                     {currentStep === 2 && (
@@ -691,6 +1055,8 @@ export default function COCApplication({ auth }) {
                             formData={formData}
                             errors={errors}
                             handleChange={handleChange}
+                            ethnicityOptions={ethnicityOptions}
+                            loadingEthnicities={loadingEthnicities}
                         />
                     )}
                     {currentStep === 3 && (
@@ -698,6 +1064,8 @@ export default function COCApplication({ auth }) {
                             formData={formData}
                             errors={errors}
                             handleChange={handleChange}
+                            ethnicityOptions={ethnicityOptions}
+                            loadingEthnicities={loadingEthnicities}
                         />
                     )}
                     {currentStep === 5 && (
